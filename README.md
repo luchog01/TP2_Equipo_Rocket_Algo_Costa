@@ -1,1 +1,1 @@
-# tp2_algo1Costa_2022
+# TP2_Equipo_Rocket_Algo_Costa

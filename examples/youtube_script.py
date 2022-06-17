@@ -236,9 +236,11 @@ def obtenerVideosPlaylist():
 # youtube pop rock electro  1 usuario
 # 3 sub-usuarios -> su1:rock su2:pop, electro
 # hola q user sos? su1 
-print(getCanal('PewDiePie'))
+# print(getCanal('PewDiePie'))
 #print(crearPlaylist("Primera Playlist", "Buena Playlist"))
 #print(agregarVideo("PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko", "k2qgadSvNyU"))
-print(obtenerVideos("PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko"))
-print(obtenerPlaylists())
-print(obtenerVideosPlaylist())
+# print(obtenerVideos("PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko"))
+# print(obtenerPlaylists())
+# print(obtenerVideosPlaylist())
+
+print(obtener_servicio())

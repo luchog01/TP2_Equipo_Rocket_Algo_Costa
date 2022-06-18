@@ -21,6 +21,18 @@ SCOPES = [
 ARCHIVO_SECRET_CLIENT = 'credentials.json'
 ARCHIVO_TOKEN = 'token.json'
 
+def clear() -> None:
+    '''
+    Clear the console for your operating system
+    '''
+    #Windows
+    if os.name == 'nt':
+        os.system('cls')   
+    #Linux/Mac
+    else:
+        os.system('clear')
+
+
 def login() -> Resource:
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
@@ -40,7 +52,57 @@ def login() -> Resource:
         with open(ARCHIVO_TOKEN, 'w') as token:
             token.write(creds.to_json())
 
- 
     return build("youtube", "v3", credentials=creds)
-  
-   
+
+
+def new_playlist(conn: Resource) -> None:
+    
+    """
+    Create a new playlist in youtube asking for its name, description and privacy status
+    """
+
+    clear()
+    
+    check1 = True
+    while check1:
+        playlist_name :str = input('Input a name for your new playlist [Max 150 char]: ')
+        if len(playlist_name) <= 150:
+            check1 = False
+        else:
+            print('Playlist name must be less than 150 characters')    
+
+    check2 = True
+    while check2:
+        playlist_description :str = input('Input a description for your new playlist [Max 5000 char]: ')
+        if len(playlist_name) <= 5000:
+            check2 = False
+        else:
+            print('Playlist description must be less than 5000 characters')
+
+    check3 = True
+    while check3:        
+        privacy: str = input('Playlist must be public, private or unlisted?')
+        if privacy.lower() in ['public','private','unlisted']:
+            check3 = False
+            privacy = privacy.lower()
+        else:
+            print('Input a valid privacy status')
+            
+    try:
+        conn.playlists().insert(
+            part="snippet,status",
+            body=dict(
+            snippet=dict(
+                title=playlist_name,
+                description=playlist_description
+                ),
+            status=dict(
+            privacyStatus=privacy
+                )
+            )
+        ).execute()
+        
+        print(f'\nNew playlist called {playlist_name} created succesfully.')
+        
+    except:
+        print('\nAn error has occurred')

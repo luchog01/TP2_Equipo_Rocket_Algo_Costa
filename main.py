@@ -55,7 +55,7 @@ def main():
                 conn: Resource = youtube.login()
                 print("Successfully logged in\n")
             except:
-                print("\nError al conectar con YouTube\n")
+                print("\nAn error has occurred when trying to connect with Youtube\n")
                 option = "7"
 
             while option != "7":
@@ -81,7 +81,7 @@ def main():
                 conn:Spotify = spotify.login()
                 print("Successfully logged in\n")
             except:
-                print("\nError al conectar con Spotify\n")
+                print("\nAn error has occurred when trying to connect with Spotify\n")
                 option = "7"
             while option != "7":
                 show_spotify_menu()
@@ -100,10 +100,12 @@ def main():
                     spotify.make_word_cloud(conn)
                 elif option not in ["1","2","3","4","5","6","7"]:
                     print("Not valid option")
-        else:
+
+        elif option not in ['1','2','3']:
             print("Option not supported")
             
-        
-    
+    else:
+        print('Bye, \'Loco Mauro\'')
+
 
 main()

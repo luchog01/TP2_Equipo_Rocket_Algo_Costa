@@ -1,1 +1,3 @@
 tekore
+google-api-python-client
+google-auth-oauthlib

@@ -135,7 +135,10 @@ def export_playlist(conn: Spotify) -> None:
     with open(f'files/spotify_export_{playlist_name}.csv', 'w', encoding="utf-8") as f:
         f.write('name,id,artist,album,duration,date,explicit,popularity,track_number,disc_number\n')
         for track in tracks_data:
-            f.write(','.join(track) + '\n')
+            try:
+                f.write(','.join(track) + '\n')
+            except:
+                print('An error has occurred in track', track[0])
 
     clear
     print('\nPlaylist exported successfully')   

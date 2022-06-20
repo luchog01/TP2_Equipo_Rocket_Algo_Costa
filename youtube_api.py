@@ -209,3 +209,4 @@ def export_playlists(conn: Resource) -> None:
                         print(f"Error writing track {tracks_info[i][0]}, error msg: {e}")
 
     clear()
+    print("Exported succesfully")

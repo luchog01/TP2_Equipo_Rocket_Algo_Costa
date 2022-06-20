@@ -1,4 +1,5 @@
 import os
+import re
 
 from io import TextIOWrapper
 from urllib import response
@@ -133,3 +134,20 @@ def show_playlists(conn: Resource) -> None:
     print(f'The user has {playlists_quantity} titled playlists on youtube:\n')
     for i in range(len(playlists)):
         print(f'{i + 1}. {playlists[i]}')
+
+  
+def clean_titles(youtube_songs: list) -> list:
+    """
+    returns a list of song titles deleting the data that is not part of the song name of the received list
+    """
+    regex: str = "(?<=- ).*?(?=\(|\[|feat)"
+    youtube_songs_clean: list = []
+    for text in youtube_songs:
+        if not re.findall(regex, text):
+            title: list = re.findall('(?<=- ).*', text)
+            youtube_songs_clean.append(title[0].title().strip())
+        else:
+            title: list = re.findall(regex, text)          
+            youtube_songs_clean.append(title[0].title().strip())
+            
+    return youtube_songs_clean

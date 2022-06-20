@@ -68,7 +68,7 @@ def main():
                 elif option == "3":
                     youtube.show_playlists(conn)
                 elif option == "4":
-                    youtube.export_playlists(conn)
+                    youtube.export_playlist(conn)
                 elif option == "5":
                     youtube.sync_to_spotify(conn)
                 elif option == "6":
@@ -93,7 +93,7 @@ def main():
                 elif option == "3":
                     spotify.show_playlists(conn)
                 elif option == "4":
-                    spotify.export_playlists(conn)
+                    spotify.export_playlist(conn)
                 elif option == "5":
                     spotify.sync_to_youtube(conn)
                 elif option == "6":

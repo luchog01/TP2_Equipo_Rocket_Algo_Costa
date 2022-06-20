@@ -168,7 +168,7 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> None:
         tracks_info.append([track_title, videoOwner, video_id, published_id, track_id, etag, videoOwnerId, description, track_type, jpg_link])
 
     return tracks_info
-def export_playlists(conn: Resource) -> None:
+def export_playlist(conn: Resource) -> None:
     """
     Export all track's data from certain playlist into a csv file
     """

@@ -139,8 +139,3 @@ def export_playlist(conn: Spotify) -> None:
 
     clear
     print('\nPlaylist exported successfully')   
-
-
-    
-
-export_playlist(login())

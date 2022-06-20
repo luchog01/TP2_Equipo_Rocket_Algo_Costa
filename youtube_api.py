@@ -9,6 +9,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from requests import request
 import httplib2
+import csv
 
 CHANNEL_ID = 'UCd_QeeJYwLmb13KUP0E3FHw'
 # Primera Playlist PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko
@@ -107,8 +108,7 @@ def new_playlist(conn: Resource) -> None:
     except:
         print('\nAn error has occurred')
 
-
-def show_playlists(conn: Resource) -> None:
+def show_playlists(conn: Resource, _print=True) -> None:
     """
     Show playlists [Max 50] on channel id
     """
@@ -126,10 +126,86 @@ def show_playlists(conn: Resource) -> None:
     playlists: list = []
     response = response['items']
 
-    for j in range(len(response)):
-        playlist_title: str = response[j]['snippet']['title']
-        playlists.append(playlist_title)
+    if _print:
+        for j in range(len(response)):
+            playlist_title: str = response[j]['snippet']['title']
+            playlists.append(playlist_title)
 
-    print(f'The user has {playlists_quantity} titled playlists on youtube:\n')
-    for i in range(len(playlists)):
-        print(f'{i + 1}. {playlists[i]}')
+        print(f'The user has {playlists_quantity} titled playlists on youtube:\n')
+        for i in range(len(playlists)):
+            print(f'{i + 1}. {playlists[i]}')
+    else:
+        return response
+
+def getTracksInfo(conn: Resource, playlist_id: str) -> None:
+    """
+    Get all tracks info from certain playlist
+    """
+    tracks_info: list = []
+
+    request = conn.playlistItems().list(
+        part = "snippet",
+        playlistId = playlist_id,
+        maxResults = 50
+    )
+    response = request.execute()
+
+    response = response['items']
+
+    # retrive all tracks info from youtube API response and fetch them into a list of list for every track
+    for i in range(len(response)):
+        track_title: str = response[i]['snippet']['title']
+        videoOwner: str = response[i]['snippet']['videoOwnerChannelTitle']
+        video_id: str = response[i]['snippet']['resourceId']['videoId']
+        published_id: str = response[i]['snippet']['publishedAt']
+        track_id: str = response[i]['id']
+        etag: str = response[i]['etag']
+        videoOwnerId: str = response[i]['snippet']['videoOwnerChannelId']
+        description: str = str(response[i]['snippet']['description']).replace('\n', ' ') # remove new lines from description
+        track_type: str = response[i]['snippet']['resourceId']['kind']
+        jpg_link :str = response[i]['snippet']['thumbnails']['medium']['url']
+        
+        tracks_info.append([track_title, videoOwner, video_id, published_id, track_id, etag, videoOwnerId, description, track_type, jpg_link])
+
+    return tracks_info
+def export_playlists(conn: Resource) -> None:
+    """
+    Export all track's data from certain playlist into a csv file
+    """
+
+    # get playlist id from playlist name
+    response = show_playlists(conn, _print=False)
+
+    # get playlists names
+    playlists :list = []
+    print("Choice a playlist to export: ")
+    for j in range(len(response)):
+            playlist_title: str = response[j]['snippet']['title']
+            print(f'{j}. {playlist_title}')
+            playlists.append(playlist_title)
+
+    # select a playlist name
+    option :str = ""
+    while option not in [str(i) for i in range(len(playlists))]:
+        option = input('Input a number: ')
+
+    playlist_name = playlists[int(option)] 
+
+    # get playlist id using playlist name
+    for i in range(len(response)):
+        if response[i]['snippet']['title'] == playlist_name: # if playlist name is the same as the one selected
+            playlist_id = response[i]['id']
+    
+            tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
+            
+            # create a csv file with all tracks info
+            with open(f'files/youtube_export_{playlist_name}.csv', 'w', encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Track title', 'Video owner', 'Video id', 'Published date', 'Track id', 'Etag', 'Video owner id', 'Description', 'Track type', 'Jpg link'])
+                for i in range(len(tracks_info)):
+                    try:
+                        writer.writerow(tracks_info[i])
+                    except Exception as e:
+                        print(f"Error writing track {tracks_info[i][0]}, error msg: {e}")
+
+    clear()

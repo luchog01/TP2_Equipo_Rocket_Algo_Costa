@@ -1,5 +1,9 @@
 import os
 import re
+import csv
+import pathlib
+
+path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 
 from io import TextIOWrapper
 from urllib import response
@@ -134,8 +138,34 @@ def show_playlists(conn: Resource) -> None:
     print(f'The user has {playlists_quantity} titled playlists on youtube:\n')
     for i in range(len(playlists)):
         print(f'{i + 1}. {playlists[i]}')
+        
+#########################
+def get_response_playlist(conn):
+    request = conn.playlists().list(
+    part = "snippet",
+    channelId = CHANNEL_ID,
+    maxResults = 50
+    )
+    response = request.execute()
+    playlists_quantity: int = response['pageInfo']['totalResults']
 
-  
+    response = response['items']
+    
+    return response
+
+
+def get_playlists_name(conn):
+    response = get_response_playlist(conn)
+    
+    playlists_name: list = []
+
+    for j in range(len(response)):
+        playlist_title: str = response[j]['snippet']['title']
+        playlists_name.append(playlist_title)
+        
+    return playlists_name
+
+
 def clean_titles(youtube_songs: list) -> list:
     """
     returns a list of song titles deleting the data that is not part of the song name of the received list
@@ -151,3 +181,63 @@ def clean_titles(youtube_songs: list) -> list:
             youtube_songs_clean.append(title[0].title().strip())
             
     return youtube_songs_clean
+
+def read_file(file):
+    lines = []
+    try:
+        with open(file, newline='', encoding="UTF-8") as file_csv:
+            csv_reader = csv.reader(file_csv, delimiter=',')
+            next(csv_reader) # avoid reading the header
+            for row in csv_reader:
+                lines.append(row)
+    except IOError:
+        print("\nFile not found\n")
+        
+    return lines
+
+def write_file(file, song):
+    file.write(f'{song}\n')
+
+def sync_to_spotify(conn: Resource):
+    print("\nSync playlist to Spotify\n")
+    # remember export playlists before sync
+    print("Which playlist do you want to sync?\n")
+    show_playlists(conn)
+
+    playlist_number: int = int(input("\nSelect a playlist: "))
+    playlist_name: list = get_playlists_name(conn)[playlist_number - 1]
+    
+    youtube_file: str = "files\youtube.csv"
+    spotify_file: str = "files\spotify.csv"
+
+    lines_youtube: list = read_file(youtube_file)
+    lines_spotify: list = read_file(spotify_file)
+
+    spotify_songs: list = []
+    for line in lines_spotify:
+        if line[0] == playlist_name:
+            spotify_songs.append(line[1].strip())
+       
+    youtube_songs: list = []
+    for line in lines_youtube:
+        if line[0] == playlist_name:
+            youtube_songs.append(line[1].strip())
+
+    print(spotify_songs, 'spotify_songs')
+    print(youtube_songs, 'youtube_songs')
+
+    songs_not_in_spotify = []
+
+
+    for song in youtube_songs:
+        if song not in spotify_songs:
+            songs_not_in_spotify.append(song)
+            
+    print(songs_not_in_spotify, 'songs_not_in_spotify') 
+    
+    file_youtube_to_spotify = open(path + 'youtube_to_spotify.csv','w')
+    
+    for song in songs_not_in_spotify:
+        write_file(file_youtube_to_spotify, song)
+        
+    # add_song_to_playlist(conn)

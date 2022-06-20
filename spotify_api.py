@@ -82,7 +82,7 @@ def new_playlist(conn: Spotify) -> None:
         print('\nAn error has occurred')
 
 
-def show_playlists(conn: Spotify) -> None:
+def show_playlists(conn: Spotify, _print :bool=True) -> None:
     """
     Show playlists [Max 50] on user id
     """
@@ -90,11 +90,78 @@ def show_playlists(conn: Spotify) -> None:
     clear()
 
     playlists = Spotify.playlists(conn, USER_ID, 50, 0)
+    
+    if _print:
+        print(f'The user has {playlists.total} titled playlists on Spotify:\n')
+        for i in range(playlists.total):
+            print(f'{i + 1}. {playlists.items[i].name}')
+    else:
+        return playlists.items
 
-    print(f'The user has {playlists.total} titled playlists on Spotify:\n')
-    for i in range(playlists.total):
-        print(f'{i + 1}. {playlists.items[i].name}')
 
+def show_playlists(conn: Spotify, _print :bool=True) -> None:
+    """
+    Show playlists [Max 50] on user id
+    """
+
+    clear()
+
+    playlists = Spotify.playlists(conn, USER_ID, 50, 0)
+    
+    if _print:
+        print(f'The user has {playlists.total} titled playlists on Spotify:\n')
+        for i in range(playlists.total):
+            print(f'{i + 1}. {playlists.items[i].name}')
+    else:
+        return playlists.items
+
+def export_playlist(conn: Spotify) -> None:
+    """
+    Export all track's data from certain playlist into a csv file
+    """
+    clear()
+
+    playlistitems :list = show_playlists(conn, _print=False) # Get all playlists
+
+    # select a playlist
+    print("Choice a playlist to export: ")
+    for i in range(len(playlistitems)):
+            print(f'{i}. {playlistitems[i].name}')
+    option :str = ""
+    while option not in [str(i) for i in range(len(playlistitems))]:
+        option = input('Input a number: ')
+    option = int(option)
+
+    # get track's data from playlist 
+    tracks :list = conn.playlist_items(playlistitems[option].id).items
+
+    # fetch track's data into a list of lists
+    tracks_data :list = []
+    for track in tracks:
+        name :str = str(track.track.name)
+        id :str = str(track.track.id)
+        artist :str = str(track.track.artists[0].name)
+        album :str = str(track.track.album.name)
+        duration :str = str(track.track.duration_ms)
+        date :str = str(track.track.album.release_date)
+        explicit :str = str(track.track.explicit)
+        popularity :str = str(track.track.popularity)
+        track_number :str = str(track.track.track_number)
+        disc_number :str = str(track.track.disc_number)
+        tracks_data.append([name, id, artist, album, duration, date, explicit, popularity, track_number, disc_number])
+
+    # export to csv
+    playlist_name = str(playlistitems[option].name).replace(' ', '_')
+    with open(f'files/spotify_export_{playlist_name}.csv', 'w', encoding="utf-8") as f:
+        f.write('name,id,artist,album,duration,date,explicit,popularity,track_number,disc_number\n')
+        for track in tracks_data:
+            try:
+                f.write(','.join(track) + '\n')
+            except:
+                print('An error has occurred in track', track[0])
+
+    clear
+    print('\nPlaylist exported successfully')   
 
 def read_file(file):
     lines = []

@@ -2,6 +2,7 @@ from importlib.resources import Resource
 import spotify_api as spotify
 import youtube_api as youtube
 from tekore import Spotify
+import genius_api as genius
 
 def select_plataform(plataform:str) -> None:
     if plataform == "spotify":
@@ -72,7 +73,7 @@ def main():
                 elif option == "5":
                     youtube.sync_to_spotify(conn)
                 elif option == "6":
-                    youtube.make_word_cloud(conn)
+                    genius.make_word_cloud('Youtube', conn)
                 elif option not in ["1","2","3","4","5","6","7"]:
                     print("Not valid option")
 
@@ -97,7 +98,7 @@ def main():
                 elif option == "5":
                     spotify.sync_to_youtube(conn)
                 elif option == "6":
-                    spotify.make_word_cloud(conn)
+                    genius.make_word_cloud('Spotify',conn)
                 elif option not in ["1","2","3","4","5","6","7"]:
                     print("Not valid option")
 

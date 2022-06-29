@@ -2,9 +2,6 @@ import os
 import csv
 import pathlib
 
-from spotify_api import add_songs_sync_to_spotify, clean_titles, read_file, read_file_for_sync
-from spotify_api import login as login_spotify
-
 from io import TextIOWrapper
 from urllib import response
 from googleapiclient.discovery import Resource, build
@@ -16,7 +13,7 @@ from requests import request
 import httplib2
 
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
-conn_spotify = login_spotify()
+
 
 CHANNEL_ID = 'UCd_QeeJYwLmb13KUP0E3FHw'
 # Primera Playlist PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko
@@ -118,10 +115,7 @@ def new_playlist(conn: Resource) -> None:
 def show_playlists(conn: Resource, _print=True) -> None:
     """
     Show playlists [Max 50] on channel id
-    """
-    
-    clear()
-    
+    """    
     request = conn.playlists().list(
         part = "snippet",
         channelId = CHANNEL_ID,
@@ -219,62 +213,47 @@ def export_playlist(conn: Resource) -> None:
 
     clear()
     print("Exported succesfully")
-    
-def get_response_playlist(conn):
-    request = conn.playlists().list(
-    part = "snippet",
-    channelId = CHANNEL_ID,
-    maxResults = 50
-    )
-    response = request.execute()
-    playlists_quantity: int = response['pageInfo']['totalResults']
 
-    response = response['items']
-    
-    return response
+def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
 
-
-def get_playlists_name(conn):
-    response = get_response_playlist(conn)    
-    playlists_name: list = []
-
-    for j in range(len(response)): 
-        playlist_title: str = response[j]['snippet']['title']
-        playlists_name.append(playlist_title)
-        
-    return playlists_name
-
-
-def get_playlist_id(conn,playlist_name):
-
-    response = get_response_playlist(conn)
+    response = show_playlists(conn, _print=False)
 
     for j in range(len(response)):
         if response[j]['snippet']['localized']['title'] == playlist_name:
             playlist_id: str = response[j]['id']
 
     return playlist_id
-
+   
 def sync_to_spotify(conn: Resource):
-    print("\nSync playlist to Spotify - Remember export playlists before sync\n")
-    print("Which playlist do you want to sync?\n")
-    show_playlists(conn)
-    playlist_number: int = int(input("\nSelect a playlist: "))
-    # TODO: exportar la playlist - se tendria que modificar la funcion export_playlist para pasarle de parametro la playlist (moodularizar)
-    playlist_name: list = get_playlists_name(conn)[playlist_number - 1]
+    """
+    sync playlist adding songs not found in spotify to the spotify playlist
+    """
+    from spotify_api import add_songs_sync_to_spotify, clean_titles, get_spotify_playlist_id,  read_file, read_file_for_sync
+    from spotify_api import login as login_spotify
     
-    playlist_id = get_playlist_id(conn, playlist_name)
-    print(playlist_name)
-    print(playlist_id)
+    print("\nSync playlist to Spotify\n")
+    print("Which playlist do you want to sync?\n")
+
+    response = show_playlists(conn, _print=False)
+    show_playlists(conn)
+    total_playlists = len(response)
+
+    # input playlist number
+    playlist_number: int = 0
+    while playlist_number not in range(1, total_playlists + 1):
+        try:
+            playlist_number: int = int(input('\nSelect a playlist: '))
+        except:
+            print('Invalid Option')
+    
+    playlist_name: str = response[playlist_number - 1]['snippet']['title']
+    #playlist_id: str = response[playlist_number - 1]['id']
+    # TODO: exportar la playlist
     
     youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
     spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
-
     lines_youtube: list = read_file_for_sync(youtube_file, playlist_name, 'Youtube')
     lines_spotify: list = read_file_for_sync(spotify_file, playlist_name, 'Spotify')
-
-    #print(lines_spotify)
-    #print(lines_youtube)
     
     # list all songs,artists of the chosen spotify playlist
     spotify_songs_artists: list = []
@@ -286,19 +265,13 @@ def sync_to_spotify(conn: Resource):
     for line in lines_youtube:
         if line != []:
             youtube_songs_artists.append([line[1].strip().title(), line[0].strip()])
-
-    print('youtube_songs_artists1',youtube_songs_artists)
     youtube_songs_artists = clean_titles(youtube_songs_artists)
 
-    print('spotify_songs_artists',spotify_songs_artists)
-    print('youtube_songs_artists',youtube_songs_artists)
-
     # list songs that are not in spotify playlist
-    spotify_songs = [x[0] for x in spotify_songs_artists]
-    songs_not_in_spotify = [[x[0],x[1]] for x in youtube_songs_artists if x[0] not in spotify_songs]
-
-    print('\nThe next songs are not in spotify playlist:')
-    count_songs = 1
+    spotify_songs: list = [x[0] for x in spotify_songs_artists]
+    songs_not_in_spotify: list = [[x[0],x[1]] for x in youtube_songs_artists if x[0] not in spotify_songs]
+    print('\nThe next songs are not in the spotify playlist:')
+    count_songs: int = 1
     for data in songs_not_in_spotify:
         print(f"{count_songs}. {data[0]} - {data[1]}")
         count_songs += 1
@@ -312,9 +285,12 @@ def sync_to_spotify(conn: Resource):
     file_youtube_to_spotify = path + "youtube_to_spotify.csv"
     lines = read_file(file_youtube_to_spotify)
     
-    ############ no funciona
-    # TypeError: playlists() missing 1 required positional argument: 'user_id'
-    # add songs not in spoify to spotify
-    spotify_playlist_id = get_playlist_id(conn_spotify, playlist_name)
+    # add songs not in spotify to spotify playlist
+    conn_spotify: Resource = login_spotify()
+    spotify_playlist_id = get_spotify_playlist_id(conn_spotify, playlist_name)
+    print('\nAdding songs...')
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
+    print('Songs added.')
 
+def add_songs_sync_to_youtube(conn_youtube, lines, youtube_playlist_id):
+    pass

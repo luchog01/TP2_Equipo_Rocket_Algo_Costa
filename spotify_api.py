@@ -5,6 +5,9 @@ import re
 import csv
 import pathlib
 
+from youtube_api import get_yb_playlist_id_by_playlist_name
+
+
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 USER_ID = '31wehtihuhvriaasxyd5phnekdye'
 CLIENT_ID = '5422aa04b10040e18ef47834e08ec9aa'
@@ -104,9 +107,6 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     """
     Show playlists [Max 50] on user id
     """
-
-    clear()
-
     playlists = Spotify.playlists(conn, USER_ID, 50, 0)
     
     if _print:
@@ -193,69 +193,54 @@ def read_file_for_sync(file: str, playlist_name: str, platform: str):
         
     return lines
 
-def get_playlists_name(conn: Spotify):
-
-    playlists = Spotify.playlists(conn, USER_ID)
-    playlists_name_list = []
-    
-    for i in range(playlists.total):
-        playlists_name_list.append(playlists.items[i].name)
-            
-    return playlists_name_list
-
-def get_playlists_id(conn: Spotify, playlist_name):
-    playlists = Spotify.playlists(conn, USER_ID)
-    playlists_id_list = []
-
-    for i in range(playlists.total):
-        if playlists.items[i].name == playlist_name:
-            playlists_id_list.append(playlists.items[i].id)
-    
-    return playlists_id_list
-
 def get_songs_uri(track_id):  
     songs_uri = []
-
     for i in range(len(track_id)):
         songs_uri.append(playlist_songs = Spotify.track(track_id))
             
     return songs_uri
 
 def read_file(file):
-    #file_spotify_to_youtube = path + "spotify_to_youtube.csv"
     lines: list = []
     with open(file, newline='', encoding="UTF-8") as file_csv:
         csv_reader = csv.reader(file_csv, delimiter=',')
-        next(csv_reader) # avoid reading the header
         for row in csv_reader:
             lines.append(row)
-    
+
     return lines
 
 def sync_to_youtube(conn: Spotify):
-    print("\nSync playlist to Youtube - Remember export playlists before sync\n")
-    print("Which playlist do you want to sync?\n")
-    show_playlists(conn)
-    playlist_number: int = int(input("\nSelect a playlist: "))
-    # TODO: exportar la playlist - se tendria que modificar la funcion export_playlist para pasarle de parametro la playlist (moodularizar)
-    playlist_name: list = get_playlists_name(conn)[playlist_number - 1]
+    """
+    sync playlist adding songs not found in youtube to the youtube playlist
+    """
+    from youtube_api import login as login_youtube
     
-    playlist_id = get_playlists_id(conn, playlist_name)
-    print(playlist_id, 'playlist_id')
-
+    print("\nSync playlist to Youtube\n")
+    print("Which playlist do you want to sync?\n")
+    
+    show_playlists(conn, _print=True)    
+    playlistitems :list = show_playlists(conn, _print=False) # get all playlists 
+          
+    # select an option
+    option :str = ""
+    while option not in [str(i) for i in range(len(playlistitems))]:
+        option = input('\nSelect a playlist: ')
+    option = int(option)
+    
+    playlist_name: str = Spotify.playlists(conn, USER_ID).items[option - 1].name
+    #playlist_id: str = Spotify.playlists(conn, USER_ID).items[option - 1].id
+    # TODO: exportar la playlist 
+    
     youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
     spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
-
     lines_youtube: list = read_file_for_sync(youtube_file, playlist_name, 'Youtube')
     lines_spotify: list = read_file_for_sync(spotify_file, playlist_name, 'Spotify')
-
-    #print(lines_spotify)
-    #print(lines_youtube)
     
     # list all songs,artists of the chosen spotify playlist
     spotify_songs_artists: list = []
     for line in lines_spotify:
         spotify_songs_artists.append([line[0].strip().title(), line[2].strip()]) #[[name. artist]]
+
         
     # list all songs,artists of the chosen spotify playlist
     youtube_songs_artists: list = []
@@ -264,10 +249,6 @@ def sync_to_youtube(conn: Spotify):
             youtube_songs_artists.append([line[1].strip().title(), line[0].strip()])
             
     youtube_songs_artists = clean_titles(youtube_songs_artists)
-
-    print(spotify_songs_artists, 'spotify_songs_artists')
-    print(youtube_songs_artists, 'youtube_songs_artists')
-
     # list songs that are not in youtube playlist
     youtube_songs = [x[0] for x in youtube_songs_artists]
     songs_not_in_youtube = [[x[0],x[1]] for x in spotify_songs_artists if x[0] not in youtube_songs]
@@ -283,19 +264,23 @@ def sync_to_youtube(conn: Spotify):
     for song in songs_not_in_youtube:
         file_spotify_to_youtube.write(f'{song[0]},{song[1]}\n')
     
-    print('\n')
     # read spotify_to_youtube.csv
     file_spotify_to_youtube = path + "spotify_to_youtube.csv"
     lines = read_file(file_spotify_to_youtube)
-
+    
+    # add songs not in youtube to youtube playlist  
+    conn_youtube = login_youtube()
+    youtube_playlist_id = get_yb_playlist_id_by_playlist_name(conn_youtube, playlist_name)
+    #add_songs_sync_to_youtube(conn_youtube, lines, youtube_playlist_id)
+    
 def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # get songs uris
-    tracks: list = []
+    tracks_uris: list = []
     for line in lines:
-        result = conn_spotify.search(line[0], types= ('track',))[0].items[0]
-        tracks.append(result.uri)
-    
-    #add songs to playlist
-    conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks)
+        result_tracks = conn_spotify.search(f'{line[0]} artist:{line[1]}', types=('track',))[0].items[0]
+        tracks_uris.append(result_tracks.uri)
+
+    # add songs to playlist
+    conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks_uris)
     
     

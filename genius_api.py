@@ -88,8 +88,8 @@ def get_tracks_info(app :str, conn) -> list:
 
 def get_lyrics(songs: list, only_get: bool) -> list:
     try:
-        genius = Genius(CLIENT_ACCESS_TOKEN_GENIUS, verbose = True, remove_section_headers = True)
-    
+        genius = Genius(CLIENT_ACCESS_TOKEN_GENIUS, verbose = False, remove_section_headers = True)
+        
         lyrics: list = []
         for song in songs: #Search lyrics
             try: #Try searching with the artist name

@@ -1,8 +1,8 @@
 # TP2_Equipo_Rocket_Algo_Costa
 ### Integrantes
-107190 - Chrzanowski Serantes, Agustina
-109995 - Garbarino, Luciano Ignacio
-108634 - Otero Silvera, Maximiliano Nicolas
+107190 - Chrzanowski Serantes, Agustina  
+109995 - Garbarino, Luciano Ignacio  
+108634 - Otero Silvera, Maximiliano Nicolas  
 108484 - Yunes, Camila
 ### Corrector
 Martin Sosa

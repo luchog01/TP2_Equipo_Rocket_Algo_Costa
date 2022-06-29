@@ -2,3 +2,4 @@ tekore
 google-api-python-client
 google-auth-oauthlib
 importlib-resources
+lyricsgenius

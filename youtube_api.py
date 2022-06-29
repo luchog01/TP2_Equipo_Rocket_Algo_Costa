@@ -150,12 +150,12 @@ def add_song_to_playlist(conn: Resource) -> None:
 
         song = input('Enter the song: ')
         result = conn.search().list(
-            q = song.q,
+            q = song,
             part = 'snippet',
             max_results = 3,
         ).execute()
 
-        tracks.append(result)
+        tracks.append(result[0])
         
     #select a playlist
     numbers: list = []
@@ -172,24 +172,28 @@ def add_song_to_playlist(conn: Resource) -> None:
 
     playlist_id: str = playlistitems[number]['id']
 
+    add_song(playlist_id, tracks)
+
+
+    def add_song(playlist_id: str, tracks: list)->None:
     #add song to playlist
-    videoIds = list(track['snippet']['videoId'] for track in tracks)
+        videoIds = list(track['snippet']['videoId'] for track in tracks)
 
-    for videoId in videoIds:
-        request_body = {
-            'snippet': {
-                'playlist_id' : playlist_id,
-                'resourseId': {
-                    'kind': 'youtube#video',
-                    'videoId': videoId,
-                } 
+        for videoId in videoIds:
+            request_body = {
+                'snippet': {
+                    'playlist_id' : playlist_id,
+                    'resourseId': {
+                        'kind': 'youtube#video',
+                        'videoId': videoId,
+                    } 
+                }
             }
-        }
 
-    conn.playlistItems().insert(
-        part = 'snippet',
-        body = request_body,
-    ).execute()
+        conn.playlistItems().insert(
+            part = 'snippet',
+            body = request_body,
+        ).execute()
 
     
 

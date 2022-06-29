@@ -153,11 +153,11 @@ def export_playlist(conn: Spotify) -> None:
         #search the song
         print('Enter quit if you dont want to add more songs')
         song :str = input('Enter the song: ')
-        tracks: list = []
+        tracks_uri: list = []
 
         while song != 'quit':
             result = conn.search(song, types= ('track',))[0].items[0]
-            tracks.append(result.uri)
+            tracks_uri.append(result.uri)
             song = input('Enter the song: ')
 
         #select a playlist
@@ -173,15 +173,16 @@ def export_playlist(conn: Spotify) -> None:
         while number not in numbers:
             number = int(input('Enter a number: '))
 
-        playlist: str = playlistitems[number].id
+        playlist_id: str = playlistitems[number].id
+        playlist:str = playlistitems[number].name
 
         #add songs to playlist
-        all_tracks :list = conn.playlist_items(playlistitems[number].uri).items
+        all_tracks :list = conn.playlist_items(playlist.uri).items
 
-        conn.playlist_add(playlist_id = playlist, uris = tracks, position=len(all_tracks) + 1)
+        conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
 
         
-        if track in all_tracks:
+        if tracks_uri in all_tracks:
             print('Songs successfully added')
         else:
             print('An error has occurred when trying to add the songs')

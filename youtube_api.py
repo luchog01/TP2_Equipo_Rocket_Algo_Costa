@@ -108,7 +108,8 @@ def new_playlist(conn: Resource) -> None:
     except:
         print('\nAn error has occurred')
 
-def show_playlists(conn: Resource, _print=True) -> None:
+
+def show_playlists(conn: Resource, _print: bool) -> None:
     """
     Show playlists [Max 50] on channel id
     """
@@ -137,7 +138,8 @@ def show_playlists(conn: Resource, _print=True) -> None:
     else:
         return response
 
-def getTracksInfo(conn: Resource, playlist_id: str) -> None:
+
+def getTracksInfo(conn: Resource, playlist_id: str) -> list:
     """
     Get all tracks info from certain playlist
     """
@@ -168,6 +170,8 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> None:
         tracks_info.append([track_title, videoOwner, video_id, published_id, track_id, etag, videoOwnerId, description, track_type, jpg_link])
 
     return tracks_info
+
+
 def export_playlist(conn: Resource) -> None:
     """
     Export all track's data from certain playlist into a csv file

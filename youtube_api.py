@@ -168,28 +168,32 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> None:
         tracks_info.append([track_title, videoOwner, video_id, published_id, track_id, etag, videoOwnerId, description, track_type, jpg_link])
 
     return tracks_info
-def export_playlist(conn: Resource) -> None:
+def export_playlist(conn: Resource, playlist_name: str = "") -> None:
     """
     Export all track's data from certain playlist into a csv file
+
+    
     """
 
     # get playlist id from playlist name
     response = show_playlists(conn, _print=False)
 
-    # get playlists names
-    playlists :list = []
-    print("Choice a playlist to export: ")
-    for j in range(len(response)):
-            playlist_title: str = response[j]['snippet']['title']
-            print(f'{j}. {playlist_title}')
-            playlists.append(playlist_title)
+    if playlist_name == "":
+        # get playlists names
+        playlists :list = []
+        print("Choice a playlist to export: ")
+        for j in range(len(response)):
+                playlist_title: str = response[j]['snippet']['title']
+                print(f'{j}. {playlist_title}')
+                playlists.append(playlist_title)
 
-    # select a playlist name
-    option :str = ""
-    while option not in [str(i) for i in range(len(playlists))]:
-        option = input('Input a number: ')
+        # select a playlist name
+        option :str = ""
+        while option not in [str(i) for i in range(len(playlists))]:
+            option = input('Input a number: ')
 
-    playlist_name = playlists[int(option)] 
+        playlist_name = playlists[int(option)] 
+
 
     # get playlist id using playlist name
     for i in range(len(response)):
@@ -199,7 +203,7 @@ def export_playlist(conn: Resource) -> None:
             tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
             
             # create a csv file with all tracks info
-            with open(f'files/youtube_export_{playlist_name}.csv', 'w', encoding="utf-8") as csvfile:
+            with open(f'files/youtube_export_{playlist_name}.csv', 'w', newline="", encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['Track title', 'Video owner', 'Video id', 'Published date', 'Track id', 'Etag', 'Video owner id', 'Description', 'Track type', 'Jpg link'])
                 for i in range(len(tracks_info)):

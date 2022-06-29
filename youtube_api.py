@@ -133,3 +133,65 @@ def show_playlists(conn: Resource) -> None:
     print(f'The user has {playlists_quantity} titled playlists on youtube:\n')
     for i in range(len(playlists)):
         print(f'{i + 1}. {playlists[i]}')
+
+
+def add_song_to_playlist(conn: Resource) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
+
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks: list = []
+
+    while song != 'quit':
+
+        song = input('Enter the song: ')
+        result = conn.search().list(
+            q = song.q,
+            part = 'snippet',
+            max_results = 3,
+        ).execute()
+
+        tracks.append(result)
+        
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
+
+    for i in range(len(playlistitems)):
+        print(i,  playlistitems[i]['snippet']['title'])
+        numbers.append(i)
+
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number]['id']
+
+    #add song to playlist
+    videoIds = list(track['snippet']['videoId'] for track in tracks)
+
+    for videoId in videoIds:
+        request_body = {
+            'snippet': {
+                'playlist_id' : playlist_id,
+                'resourseId': {
+                    'kind': 'youtube#video',
+                    'videoId': videoId,
+                } 
+            }
+        }
+
+    conn.playlistItems().insert(
+        part = 'snippet',
+        body = request_body,
+    ).execute()
+
+    
+
+
+

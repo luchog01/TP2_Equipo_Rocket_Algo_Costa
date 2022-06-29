@@ -102,7 +102,6 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
-
 def show_playlists(conn: Spotify, _print :bool=True) -> None:
     """
     Show playlists [Max 50] on user id
@@ -116,7 +115,7 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
-def export_playlist(conn: Spotify) -> None:
+def export_playlist(conn: Spotify, playlist_name = "") -> None:
     """
     Export all track's data from certain playlist into a csv file
     """
@@ -124,18 +123,26 @@ def export_playlist(conn: Spotify) -> None:
 
     playlistitems :list = show_playlists(conn, _print=False) # Get all playlists
 
-    # select a playlist
-    print("Choice a playlist to export: ")
-    for i in range(len(playlistitems)):
-            print(f'{i}. {playlistitems[i].name}')
-    option :str = ""
-    while option not in [str(i) for i in range(len(playlistitems))]:
-        option = input('Input a number: ')
-    option = int(option)
+    if playlist_name == "":
+        # select a playlist
+        print("Choice a playlist to export: ")
+        for i in range(len(playlistitems)):
+                print(f'{i}. {playlistitems[i].name}')
+        option :str = ""
+        while option not in [str(i) for i in range(len(playlistitems))]:
+            option = input('Input a number: ')
+        option = int(option)
+        # get track's data from playlist 
+        tracks :list = conn.playlist_items(playlistitems[option].id).items
+    
+    else:
+        for i in range(len(playlistitems)):
+            if playlistitems[i].name == playlist_name:
+                # get track's data from playlist 
+                option = i
+                tracks :list = conn.playlist_items(playlistitems[option].id).items
 
-    # get track's data from playlist 
-    tracks :list = conn.playlist_items(playlistitems[option].id).items
-
+    
     # fetch track's data into a list of lists
     tracks_data :list = []
     for track in tracks:
@@ -162,7 +169,7 @@ def export_playlist(conn: Spotify) -> None:
                 print('An error has occurred in track', track[0])
 
     clear
-    print('\nPlaylist exported successfully')   
+    print('\nPlaylist exported successfully') 
     
 def clean_titles(youtube_songs: list) -> list:
     regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
@@ -230,6 +237,7 @@ def sync_to_youtube(conn: Spotify):
     playlist_name: str = Spotify.playlists(conn, USER_ID).items[option - 1].name
     #playlist_id: str = Spotify.playlists(conn, USER_ID).items[option - 1].id
     # TODO: exportar la playlist 
+    #export_playlist(login(), playlist_name)
     
     youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
     spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
@@ -284,3 +292,6 @@ def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks_uris)
     
     
+
+
+

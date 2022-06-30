@@ -95,7 +95,7 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
-def export_playlist(conn: Spotify) -> None:
+def export_playlist(conn: Spotify, playlist_name = "") -> None:
     """
     Export all track's data from certain playlist into a csv file
     """
@@ -103,17 +103,26 @@ def export_playlist(conn: Spotify) -> None:
 
     playlistitems :list = show_playlists(conn, _print=False) # Get all playlists
 
-    # select a playlist
-    print("Choice a playlist to export: ")
-    for i in range(len(playlistitems)):
-            print(f'{i}. {playlistitems[i].name}')
-    option :str = ""
-    while option not in [str(i) for i in range(len(playlistitems))]:
-        option = input('Input a number: ')
-    option = int(option)
+    if playlist_name == "":
+        # select a playlist
+        print("Choice a playlist to export: ")
+        for i in range(len(playlistitems)):
+                print(f'{i}. {playlistitems[i].name}')
+        option :str = ""
+        while option not in [str(i) for i in range(len(playlistitems))]:
+            option = input('Input a number: ')
+        option = int(option)
+        # get track's data from playlist 
+        tracks :list = conn.playlist_items(playlistitems[option].id).items
+    
+    else:
+        for i in range(len(playlistitems)):
+            if playlistitems[i].name == playlist_name:
+                # get track's data from playlist 
+                option = i
+                tracks :list = conn.playlist_items(playlistitems[option].id).items
 
-    # get track's data from playlist 
-    tracks :list = conn.playlist_items(playlistitems[option].id).items
+    
 
     # fetch track's data into a list of lists
     tracks_data :list = []
@@ -141,6 +150,7 @@ def export_playlist(conn: Spotify) -> None:
                 print('An error has occurred in track', track[0])
 
     clear
+
     print('\nPlaylist exported successfully')
     
 
@@ -186,3 +196,8 @@ def export_playlist(conn: Spotify) -> None:
             print('Songs successfully added')
         else:
             print('An error has occurred when trying to add the songs')   
+
+    print('\nPlaylist exported successfully')   
+
+export_playlist(login(), "Yellow")
+

@@ -240,9 +240,10 @@ def add_song_to_playlist(conn: Resource) -> None:
             maxResults = 3,
             type = 'video',
         ).execute()
+
         songs :list = result['items']
-        
         options: list = []
+
         for i in range(len(songs)):
             print(i, songs[i]['snippet']['title'])
             options.append(i)
@@ -404,8 +405,8 @@ def sync_to_spotify(conn: Resource):
     print('Songs added.')
 
     
-def get_tracks(conn, lines):
-    tracks = []
+def get_tracks(conn: Resource, lines: list) -> list:
+    tracks: list = []
     for line in lines:
         
         result = conn.search().list(

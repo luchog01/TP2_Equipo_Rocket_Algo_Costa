@@ -115,7 +115,7 @@ def new_playlist(conn: Resource) -> None:
         print('\nAn error has occurred')
 
 
-def show_playlists(conn: Resource, _print: bool) -> None:
+def show_playlists(conn: Resource, _print: bool = False) -> None:
     """
     Show playlists [Max 50] on channel id
     """    

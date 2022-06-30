@@ -8,6 +8,6 @@
 Martin Sosa
 ### Descripción del tp
 Se creo un programa que permite interactuar con las plataformas: Spotify y Youtube.
-El mismo permite en ambas plataformas: Crear una playlist, agregar canciones, listar las playlists actuales, sincronizar playlist de una plataforma a la otra y visualizar una nube de palabras y ranking del top 10 de palabas más utilizadas en las letras de una playlist.
+El mismo permite en ambas plataformas: Crear una playlist, agregar canciones, listar las playlists actuales, exportar las playlist a un csv, sincronizar playlist de una plataforma a la otra y visualizar una nube de palabras y ranking del top 10 de palabas más utilizadas en las letras de una playlist.
 ### Requerimientos
 `$ pip install -r requeriments.txt`

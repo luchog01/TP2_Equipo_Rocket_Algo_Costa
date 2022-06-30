@@ -150,6 +150,45 @@ def export_playlist(conn: Spotify, playlist_name = "") -> None:
                 print('An error has occurred in track', track[0])
 
     clear
-    print('\nPlaylist exported successfully')   
+
+    print('\nPlaylist exported successfully')
+    
+
+def add_song_to_playlist(conn: Spotify) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
+
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks_uri: list = []
+
+    while song != 'quit':
+        result = conn.search(song, types= ('track',))[0].items[0]
+        tracks_uri.append(result.uri)
+        song = input('Enter the song: ')
+
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
+
+    for i in range(len(playlistitems)):
+        print(i, playlistitems[i].name)
+        numbers.append(i)
+
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number].id
+
+    #add songs to playlist
+    conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
+    
+    print('Songs successfully added')
 
 export_playlist(login(), "Yellow")
+

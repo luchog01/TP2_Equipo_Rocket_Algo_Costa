@@ -105,6 +105,7 @@ def get_lyrics(songs: list, only_get: bool) -> list:
             try: #Try searching without the artist name
                 lyric = genius.search_song(song[0])
                 lyric: str = lyric.to_text()
+
             except:
                 #wrong song? or wrong artist?, manual search
                 title_ok: str = ''

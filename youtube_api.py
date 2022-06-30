@@ -218,3 +218,82 @@ def export_playlist(conn: Resource, playlist_name: str = "") -> None:
 
     clear()
     print("Exported succesfully")
+
+def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
+#add song to playlist
+  
+    videoIds: list = []
+    for i in range(len(tracks)):
+        track = tracks[i]
+        print(track)
+        videoId = track['id']['videoId']
+        videoIds.append(videoId)
+
+    print(videoIds)
+    print(playlist_id)
+    for videoId in videoIds:
+        playlists_insert_response = conn.playlistItems().insert(
+        part="snippet",
+        body=dict(
+        snippet=dict(
+            playlistId=playlist_id,
+            resourceId=dict(
+            kind="youtube#video",
+            videoId=videoId,
+            )
+            )
+        )
+    ).execute()
+    print ("New playlist item id: %s" % playlists_insert_response["id"])
+
+def add_song_to_playlist(conn: Resource) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
+
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks: list = []
+
+    while song != 'quit':
+
+        result = conn.search().list(
+            q = song,
+            part = 'snippet',
+            maxResults = 3,
+            type = 'video',
+        ).execute()
+        songs :list = result['items']
+        
+        options: list = []
+        for i in range(len(songs)):
+            print(i, songs[i]['snippet']['title'])
+            options.append(i)
+
+        option :int = -1
+        while option not in options:
+            option = int(input('Enter a number: '))
+
+        song = songs[option]
+        tracks.append(song)
+        song :str = input('Enter the song: ')
+    
+
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
+
+    for i in range(len(playlistitems)):
+        print(i,  playlistitems[i]['snippet']['title'])
+        numbers.append(i)
+
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number]['id']
+
+    add_song(playlist_id, tracks, conn)

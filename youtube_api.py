@@ -223,14 +223,17 @@ def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
 #add song to playlist
   
     videoIds: list = []
-    for i in range(len(tracks)):
-        track = tracks[i]
-        print(track)
-        videoId = track['id']['videoId']
-        videoIds.append(videoId)
+    try:
+        for i in range(len(tracks)):
+            track = tracks[i]
+            videoId = track['id']['videoId']
+            videoIds.append(videoId)
+    except:
+        for i in range(len(tracks)):
+            track = tracks[i]
+            videoId = track['items']['id']['videoId']
+            videoIds.append(videoId)
 
-    print(videoIds)
-    print(playlist_id)
     for videoId in videoIds:
         playlists_insert_response = conn.playlistItems().insert(
         part="snippet",

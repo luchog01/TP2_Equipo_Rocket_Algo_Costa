@@ -60,6 +60,7 @@ def main():
                 option = "7"
 
             while option != "7":
+                youtube.clear()
                 show_youtube_menu()
                 option = input("Select an option: ")
                 if option == "1":
@@ -85,6 +86,7 @@ def main():
                 print("\nAn error has occurred when trying to connect with Spotify\n")
                 option = "7"
             while option != "7":
+                spotify.clear()
                 show_spotify_menu()
                 option = input("Select an option: ")
                 if option == "1":
@@ -106,6 +108,7 @@ def main():
             print("Option not supported")
             
     else:
+        youtube.clear()
         print('Bye, \'Loco Mauro\'')
 
 

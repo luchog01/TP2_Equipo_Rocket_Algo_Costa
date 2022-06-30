@@ -88,7 +88,7 @@ def new_playlist(conn: Resource) -> None:
 
     check3: bool = True
     while check3:
-        privacy: str = input('Playlist must be public, private or unlisted?')
+        privacy: str = input('Playlist must be public, private or unlisted? ')
         if privacy.lower() in ['public','private','unlisted']:
             check3 = False
             privacy = privacy.lower()
@@ -174,20 +174,15 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> list:
 
     return tracks_info
 
-def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
-    #add song to playlist
+def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
+    #add songs to playlist
   
     videoIds: list = []
-    try:
-        for i in range(len(tracks)):
-            track = tracks[i]
-            videoId = track['id']['videoId']
-            videoIds.append(videoId)
-    except:
-        for i in range(len(tracks)):
-            track = tracks[i]
-            videoId = track['items']['id']['videoId']
-            videoIds.append(videoId)
+
+    for i in range(len(tracks)):
+        track = tracks[i]
+        videoId = track['id']['videoId']
+        videoIds.append(videoId)
 
     for videoId in videoIds:
         playlists_insert_response = conn.playlistItems().insert(
@@ -206,6 +201,7 @@ def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
     
 def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
     #add songs to playlist
+
     videoIds: list = []
     for i in range(len(tracks)):
         track = tracks[i]
@@ -258,7 +254,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
         song = songs[option]
         tracks.append(song)
-        song :str = input('Enter the song: ')
+        song :str = input('Enter a song: ')
     
 
     #select a playlist

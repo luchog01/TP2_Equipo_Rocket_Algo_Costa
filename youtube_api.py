@@ -260,7 +260,7 @@ def add_song_to_playlist(conn: Resource) -> None:
     #select a playlist
     numbers: list = []
     playlistitems :list = show_playlists(conn, _print=False)
-    print('\nChoice a playlist to add the songs: ')
+    print('\nChoose a playlist to add the songs: ')
 
     for i in range(len(playlistitems)):
         print(i,  playlistitems[i]['snippet']['title'])
@@ -285,7 +285,7 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     if playlist_name == "":
         # get playlists names
         playlists :list = []
-        print("Choice a playlist to export: ")
+        print("Choose a playlist to export: ")
         for j in range(len(response)):
                 playlist_title: str = response[j]['snippet']['title']
                 print(f'{j}. {playlist_title}')
@@ -334,6 +334,10 @@ def sync_to_spotify(conn: Resource):
     """
     from spotify_api import add_songs_sync_to_spotify, clean_titles, export_spotify_playlist, get_spotify_playlist_id_by_playlist_name, read_file, read_file_for_sync
     from spotify_api import login as login_spotify
+    from spotify_api import show_playlists as show_playlist_spotify
+    from tekore import Spotify
+    from spotify_api import USER_ID as user_id_spotify
+
     conn_spotify: Resource = login_spotify()
     
     print("\nSync playlist to Spotify\n")
@@ -352,6 +356,20 @@ def sync_to_spotify(conn: Resource):
             print('Invalid Option')
     
     playlist_name: str = response[playlist_number - 1]['snippet']['title']
+    playlist_description: str = response[playlist_number - 1]['snippet']['description']
+
+    # check if youtube playlist is in Spotify
+    playlistitems = show_playlist_spotify(conn_spotify,_print=False)
+    playlist_name_list: list = []
+    for i in range(len(playlistitems)):
+        playlist_name_list.append(playlistitems[i].name)
+    
+    if playlist_name not in playlist_name_list:
+        print("Creating Playlist in Spotify...")
+        Spotify.playlist_create(conn_spotify, user_id_spotify, playlist_name,
+                                True, playlist_description)
+
+    
     
     # export playlists
     print('\nExporting Youtube playlist to csv...')
@@ -425,4 +443,3 @@ def get_tracks(conn, lines):
         tracks.append(result)
 
     return tracks
-

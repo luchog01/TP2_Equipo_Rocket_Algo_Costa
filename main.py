@@ -4,6 +4,7 @@ import youtube_api as youtube
 from tekore import Spotify
 import genius_api as genius
 
+
 def select_plataform(plataform:str) -> None:
     if plataform == "spotify":
         pass # return spotify service
@@ -12,6 +13,7 @@ def select_plataform(plataform:str) -> None:
     else:
         print("Plataform not supported")
 
+
 def show_menu() -> None:
     print("""
 MENU\n
@@ -19,6 +21,7 @@ MENU\n
 2. Log in - Spotify
 3. Exit
 """)
+
 
 def show_youtube_menu() -> None:
     print("""
@@ -32,6 +35,7 @@ YOUTUBE MENU\n
 7. Exit
 """)
 
+
 def show_spotify_menu() -> None:
     print("""
 SPOTIFY MENU\n
@@ -43,6 +47,7 @@ SPOTIFY MENU\n
 6. Make a word cloud
 7. Exit
 """)
+
 
 def main():
     option: str = ""
@@ -69,7 +74,7 @@ def main():
                 elif option == "3":
                     youtube.show_playlists(conn)
                 elif option == "4":
-                    youtube.export_playlist(conn)
+                    youtube.export_youtube_playlist(conn)
                 elif option == "5":
                     youtube.sync_to_spotify(conn)
                 elif option == "6":
@@ -94,7 +99,7 @@ def main():
                 elif option == "3":
                     spotify.show_playlists(conn)
                 elif option == "4":
-                    spotify.export_playlist(conn)
+                    spotify.export_spotify_playlist(conn)
                 elif option == "5":
                     spotify.sync_to_youtube(conn)
                 elif option == "6":

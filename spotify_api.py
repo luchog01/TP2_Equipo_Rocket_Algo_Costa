@@ -100,6 +100,7 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
+
 def show_playlists(conn: Spotify, _print :bool=True) -> None:
     """
     Show playlists [Max 50] on user id
@@ -112,6 +113,7 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
             print(f'{i + 1}. {playlists.items[i].name}')
     else:
         return playlists.items
+
 
 def export_spotify_playlist(conn: Spotify, playlist_name = "") -> None:
     """
@@ -166,6 +168,7 @@ def export_spotify_playlist(conn: Spotify, playlist_name = "") -> None:
 
     print('Playlist exported successfully') 
 
+
 def add_song_to_playlist(conn: Spotify) -> None:
     '''
     Add songs to a user playlist
@@ -208,7 +211,8 @@ def add_song_to_playlist(conn: Spotify) -> None:
         print('Songs successfully added')
     else:
         print('An error has occurred when trying to add the songs')   
-    
+
+
 def clean_titles(youtube_songs: list) -> list:
     print(youtube_songs)
     regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
@@ -226,6 +230,7 @@ def clean_titles(youtube_songs: list) -> list:
             
     return youtube_songs_clean
 
+
 def read_file_for_sync(file: str, playlist_name: str, platform: str):
     lines: list = []
     try:
@@ -239,12 +244,14 @@ def read_file_for_sync(file: str, playlist_name: str, platform: str):
         
     return lines
 
+
 def get_songs_uri(track_id):  
     songs_uri: list = []
     for i in range(len(track_id)):
         songs_uri.append(playlist_songs = Spotify.track(track_id))
             
     return songs_uri
+
 
 def read_file(file):
     lines: list = []
@@ -255,6 +262,7 @@ def read_file(file):
 
     return lines
 
+
 def get_spotify_playlist_id_by_playlist_name(conn: Spotify, playlist_name):
     playlists = Spotify.playlists(conn, USER_ID)
     playlists_id_list = []
@@ -264,6 +272,7 @@ def get_spotify_playlist_id_by_playlist_name(conn: Spotify, playlist_name):
             playlists_id_list.append(playlists.items[i].id)
 
     return playlists_id_list
+
 
 def sync_to_youtube(conn: Spotify):
     """
@@ -336,7 +345,8 @@ def sync_to_youtube(conn: Spotify):
     print('\nAdding songs...')
     add_songs_sync_to_youtube(youtube_playlist_id, tracks, conn_youtube)
     print('Songs added.')
-    
+
+
 def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # get songs uris
     tracks_uris: list = []
@@ -346,6 +356,7 @@ def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
 
     # add songs to playlist
     conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks_uris)
+
 
 def add_song_to_playlist(conn: Spotify) -> None:
     '''

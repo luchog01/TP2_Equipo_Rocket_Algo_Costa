@@ -10,6 +10,9 @@ REDIRECT_URI_GENIUS = 'http://example.com/callback'
 CLIENT_ACCESS_TOKEN_GENIUS = 'aaaFW4ev8jSzuA8p0YzfWN7u4SPVLZqy9-ga4xqYieu5CxP2fvvT-swDQVODAuk1'
 
 def song_filter(title: str, artist: str) -> list:
+    """
+    Filter the title and artist of each song
+    """
     if artist.endswith(' - topic'):
         artist = artist[:len(artist) - 8]
 
@@ -40,7 +43,6 @@ def song_filter(title: str, artist: str) -> list:
 def get_tracks_info(app :str, conn) -> list:
     """
     Search for the title and artist of each song in a youtube/spotify playlist
-    In the case of youtube, apply a small filter to the title.
     """
     clear()
     #Read the file from yt/spt

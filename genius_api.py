@@ -10,6 +10,9 @@ REDIRECT_URI_GENIUS = 'http://example.com/callback'
 CLIENT_ACCESS_TOKEN_GENIUS = 'aaaFW4ev8jSzuA8p0YzfWN7u4SPVLZqy9-ga4xqYieu5CxP2fvvT-swDQVODAuk1'
 
 def song_filter(title: str, artist: str) -> list:
+    """
+    Filter the title and artist of each song
+    """
     if artist.endswith(' - topic'):
         artist = artist[:len(artist) - 8]
 
@@ -40,7 +43,6 @@ def song_filter(title: str, artist: str) -> list:
 def get_tracks_info(app :str, conn) -> list:
     """
     Search for the title and artist of each song in a youtube/spotify playlist
-    In the case of youtube, apply a small filter to the title.
     """
     clear()
     #Read the file from yt/spt
@@ -155,6 +157,34 @@ def get_lyrics(songs: list, only_get: bool) -> list:
     return lyrics
 
 
+def top10_words(lyrics: str) -> None:
+    """
+    Print a top 10 most used words in all the playlist
+    """
+    #Filter
+    lyrics = lyrics.lower()
+    lyrics_list :list = lyrics.split(' ')
+    filter_list: list = [
+        '',' ','-','i','it','you','we','he','she',
+        'the','me','on','and',',','that','your','me','my'
+        'que','y','a','no','la','el','un','in','at','do','do\'t',
+        'de','en','i\'m','with','you\'re'
+        ]
+    lyrics_list2: list = [word for word in lyrics_list if word not in filter_list]
+    #Sort
+    dicc: dict = {word:lyrics_list2.count(word) for word in lyrics_list2}
+    sorted_tuples = sorted(dicc.items(), key=lambda item: item[1], reverse = True)
+    sorted_list = [[k, v] for k, v in sorted_tuples]
+    #Print rank
+    if len(sorted_list) > 10:
+        max_rank: int = 10
+    elif len(sorted_list) < 10:
+        max_rank: int = len(sorted_list)
+    
+    for i in range(max_rank):
+        print(f'<{sorted_list[i][0]}> repeats {sorted_list[i][1]} times in all the playlist')
+
+
 def make_word_cloud(app :str, conn) -> None:
     """
     Do a word cloud with all the lyrics
@@ -185,6 +215,9 @@ def make_word_cloud(app :str, conn) -> None:
             os.startfile('files\playlist_cloud.png')
         else:                                   # linux variants
             subprocess.call(('xdg-open', 'files\playlist_cloud.png'))
+        
+        top10_words(lyrics_string)
+        input('\nInput any key to return menu ')
             
     except IndexError:
         print('We can\'t make a word cloud out of an empty playlist')

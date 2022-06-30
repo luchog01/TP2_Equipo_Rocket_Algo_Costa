@@ -17,7 +17,7 @@ import httplib2
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 
 
-CHANNEL_ID = 'UCd_QeeJYwLmb13KUP0E3FHw'
+CHANNEL_ID = 'UCxz7Qo_DeuK-LzHfK2KMo7w'
 # Primera Playlist PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko
 
 SCOPES = [
@@ -88,7 +88,7 @@ def new_playlist(conn: Resource) -> None:
 
     check3: bool = True
     while check3:
-        privacy: str = input('Playlist must be public, private or unlisted?')
+        privacy: str = input('Playlist must be public, private or unlisted? ')
         if privacy.lower() in ['public','private','unlisted']:
             check3 = False
             privacy = privacy.lower()
@@ -174,18 +174,16 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> list:
 
     return tracks_info
 
-def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
-    #add song to playlist
+def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
+    #add songs to playlist
   
     videoIds: list = []
+
     for i in range(len(tracks)):
         track = tracks[i]
-        print(track)
         videoId = track['id']['videoId']
         videoIds.append(videoId)
 
-    print(videoIds)
-    print(playlist_id)
     for videoId in videoIds:
         playlists_insert_response = conn.playlistItems().insert(
         part="snippet",
@@ -203,6 +201,7 @@ def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
     
 def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
     #add songs to playlist
+
     videoIds: list = []
     for i in range(len(tracks)):
         track = tracks[i]
@@ -222,7 +221,6 @@ def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) ->
             )
         )
     ).execute()
-    print ("New playlist item id: %s" % playlists_insert_response["id"])
 
 def add_song_to_playlist(conn: Resource) -> None:
     '''
@@ -256,7 +254,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
         song = songs[option]
         tracks.append(song)
-        song :str = input('Enter the song: ')
+        song :str = input('Enter a song: ')
     
 
     #select a playlist
@@ -281,7 +279,7 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     Export all track's data from certain playlist into a csv file   
     """
     # get playlist id from playlist name
-    response = show_playlists(conn, _print=False)
+    response = show_playlists(conn)
 
     if playlist_name == "":
         # get playlists names
@@ -320,9 +318,9 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     print("Playlist exported successfully")
 
 def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
-    response = show_playlists(conn, _print=False)
+    response = show_playlists(conn, _print=False)   
     for j in range(len(response)):
-        if response[j]['snippet']['localized']['title'] == playlist_name:
+        if response[j]['snippet']['title'] == playlist_name:
             playlist_id: str = response[j]['id']
 
     return playlist_id
@@ -339,7 +337,7 @@ def sync_to_spotify(conn: Resource):
     print("Which playlist do you want to sync?\n")
 
     response = show_playlists(conn, _print=False)
-    show_playlists(conn)
+    show_playlists(conn, _print=True)
     total_playlists = len(response)
 
     # input playlist number
@@ -402,7 +400,7 @@ def sync_to_spotify(conn: Resource):
     print('\nAdding songs...')
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')
-
+    
 def get_tracks(conn, lines):
     tracks = []
     for line in lines:

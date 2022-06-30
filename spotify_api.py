@@ -210,6 +210,7 @@ def add_song_to_playlist(conn: Spotify) -> None:
         print('An error has occurred when trying to add the songs')   
     
 def clean_titles(youtube_songs: list) -> list:
+    print(youtube_songs)
     regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
     regex_artist: str = ".*(?=-)"
     youtube_songs_clean: list = []
@@ -307,13 +308,13 @@ def sync_to_youtube(conn: Spotify):
     youtube_songs_artists: list = []
     for line in lines_youtube:
         if line != []:
-            youtube_songs_artists.append([line[1].strip().title(), line[0].strip()])
-            
+            youtube_songs_artists.append([line[1].strip().title(), line[0].strip()])            
     youtube_songs_artists = clean_titles(youtube_songs_artists)
+    
     # list songs that are not in youtube playlist
     youtube_songs = [x[0] for x in youtube_songs_artists]
     songs_not_in_youtube = [[x[0],x[1]] for x in spotify_songs_artists if x[0] not in youtube_songs]
-   
+    print('songs_not_in_youtube\n', songs_not_in_youtube)
     print('\nThe next songs are not in youtube playlist:')
     count_songs = 1
     for data in songs_not_in_youtube:
@@ -332,9 +333,9 @@ def sync_to_youtube(conn: Spotify):
     # add songs not in youtube to youtube playlist  
     youtube_playlist_id = get_yb_playlist_id_by_playlist_name(conn_youtube, playlist_name)
     tracks = get_tracks(conn_youtube, lines)
-    print(tracks)
+    print('\nAdding songs...')
     add_songs_sync_to_youtube(youtube_playlist_id, tracks, conn_youtube)
-
+    print('Songs added.')
     
 def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # get songs uris

@@ -174,7 +174,108 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> list:
 
     return tracks_info
 
+def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
+    #add song to playlist
+  
+    videoIds: list = []
+    for i in range(len(tracks)):
+        track = tracks[i]
+        print(track)
+        videoId = track['id']['videoId']
+        videoIds.append(videoId)
 
+    print(videoIds)
+    print(playlist_id)
+    for videoId in videoIds:
+        playlists_insert_response = conn.playlistItems().insert(
+        part="snippet",
+        body=dict(
+        snippet=dict(
+            playlistId=playlist_id,
+            resourceId=dict(
+            kind="youtube#video",
+            videoId=videoId,
+            )
+            )
+        )
+    ).execute()
+    print ("New playlist item id: %s" % playlists_insert_response["id"])
+    
+def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
+    #add songs to playlist
+    videoIds: list = []
+    for i in range(len(tracks)):
+        track = tracks[i]
+        videoId = track['items'][0]['id']['videoId']
+        videoIds.append(videoId)
+
+    for videoId in videoIds:
+        playlists_insert_response = conn.playlistItems().insert(
+        part="snippet",
+        body=dict(
+        snippet=dict(
+            playlistId=playlist_id,
+            resourceId=dict(
+            kind="youtube#video",
+            videoId=videoId,
+            )
+            )
+        )
+    ).execute()
+    print ("New playlist item id: %s" % playlists_insert_response["id"])
+
+def add_song_to_playlist(conn: Resource) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
+
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks: list = []
+
+    while song != 'quit':
+
+        result = conn.search().list(
+            q = song,
+            part = 'snippet',
+            maxResults = 3,
+            type = 'video',
+        ).execute()
+        songs :list = result['items']
+        
+        options: list = []
+        for i in range(len(songs)):
+            print(i, songs[i]['snippet']['title'])
+            options.append(i)
+
+        option :int = -1
+        while option not in options:
+            option = int(input('Enter a number: '))
+
+        song = songs[option]
+        tracks.append(song)
+        song :str = input('Enter the song: ')
+    
+
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
+
+    for i in range(len(playlistitems)):
+        print(i,  playlistitems[i]['snippet']['title'])
+        numbers.append(i)
+
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number]['id']
+
+    add_song(playlist_id, tracks, conn)
+    
 def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     """
     Export all track's data from certain playlist into a csv file   
@@ -302,84 +403,18 @@ def sync_to_spotify(conn: Resource):
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')
 
-def add_songs_sync_to_youtube(conn_youtube, lines, youtube_playlist_id):
-    pass
-
-def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
-#add song to playlist
-  
-    videoIds: list = []
-    for i in range(len(tracks)):
-        track = tracks[i]
-        print(track)
-        videoId = track['id']['videoId']
-        videoIds.append(videoId)
-
-    print(videoIds)
-    print(playlist_id)
-    for videoId in videoIds:
-        playlists_insert_response = conn.playlistItems().insert(
-        part="snippet",
-        body=dict(
-        snippet=dict(
-            playlistId=playlist_id,
-            resourceId=dict(
-            kind="youtube#video",
-            videoId=videoId,
-            )
-            )
-        )
-    ).execute()
-    print ("New playlist item id: %s" % playlists_insert_response["id"])
-
-def add_song_to_playlist(conn: Resource) -> None:
-    '''
-    Add songs to a user playlist
-    '''
-    clear()
-
-    #search the song
-    print('Enter quit if you dont want to add more songs')
-    song :str = input('Enter the song: ')
-    tracks: list = []
-
-    while song != 'quit':
-
-        result = conn.search().list(
-            q = song,
-            part = 'snippet',
-            maxResults = 3,
-            type = 'video',
-        ).execute()
-        songs :list = result['items']
+def get_tracks(conn, lines):
+    tracks = []
+    for line in lines:
         
-        options: list = []
-        for i in range(len(songs)):
-            print(i, songs[i]['snippet']['title'])
-            options.append(i)
+        result = conn.search().list(
+                q = line[0],
+                part = 'snippet',
+                maxResults = 1,
+                type = 'video',
+            ).execute()
+        
+        tracks.append(result)
 
-        option :int = -1
-        while option not in options:
-            option = int(input('Enter a number: '))
+    return tracks
 
-        song = songs[option]
-        tracks.append(song)
-        song :str = input('Enter the song: ')
-    
-
-    #select a playlist
-    numbers: list = []
-    playlistitems :list = show_playlists(conn, _print=False)
-    print('Choice a playlist to add the songs: ')
-
-    for i in range(len(playlistitems)):
-        print(i,  playlistitems[i]['snippet']['title'])
-        numbers.append(i)
-
-    number :int = -1
-    while number not in numbers:
-        number = int(input('Enter a number: '))
-
-    playlist_id: str = playlistitems[number]['id']
-
-    add_song(playlist_id, tracks, conn)

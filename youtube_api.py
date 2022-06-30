@@ -135,18 +135,16 @@ def show_playlists(conn: Resource) -> None:
         print(f'{i + 1}. {playlists[i]}')
 
 
-def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
-    #add song to playlist
+def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
+    #add songs to playlist
   
     videoIds: list = []
+
     for i in range(len(tracks)):
         track = tracks[i]
-        print(track)
         videoId = track['id']['videoId']
         videoIds.append(videoId)
 
-    print(videoIds)
-    print(playlist_id)
     for videoId in videoIds:
         playlists_insert_response = conn.playlistItems().insert(
         part="snippet",
@@ -194,7 +192,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
         song = songs[option]
         tracks.append(song)
-        song :str = input('Enter the song: ')
+        song :str = input('Enter a song: ')
     
 
     #select a playlist

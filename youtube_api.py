@@ -194,7 +194,7 @@ def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
             )
         )
     ).execute()
-    print ("New playlist item id: %s" % playlists_insert_response["id"])
+    print ("\nNew playlist item id: %s" % playlists_insert_response["id"] )
 
 
 def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
@@ -229,7 +229,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
     #search the song
     print('Enter quit if you dont want to add more songs')
-    song :str = input('Enter the song: ')
+    song :str = input('\nEnter the song: ')
     tracks: list = []
 
     while song != 'quit':
@@ -249,17 +249,17 @@ def add_song_to_playlist(conn: Resource) -> None:
 
         option :int = -1
         while option not in options:
-            option = int(input('Enter a number: '))
+            option = int(input('\nEnter a number: '))
 
         song = songs[option]
         tracks.append(song)
-        song :str = input('Enter a song: ')
+        song :str = input('\nEnter a song: ')
     
 
     #select a playlist
     numbers: list = []
     playlistitems :list = show_playlists(conn, _print=False)
-    print('Choice a playlist to add the songs: ')
+    print('\nChoice a playlist to add the songs: ')
 
     for i in range(len(playlistitems)):
         print(i,  playlistitems[i]['snippet']['title'])
@@ -267,7 +267,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
     number :int = -1
     while number not in numbers:
-        number = int(input('Enter a number: '))
+        number = int(input('\nEnter a number: '))
 
     playlist_id: str = playlistitems[number]['id']
 

@@ -1,4 +1,6 @@
 import os
+import csv
+import pathlib
 
 from io import TextIOWrapper
 from urllib import response
@@ -8,8 +10,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from requests import request
+from time import sleep
 import httplib2
-import csv
+
+
+path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
+
 
 CHANNEL_ID = 'UCd_QeeJYwLmb13KUP0E3FHw'
 # Primera Playlist PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko
@@ -112,10 +118,7 @@ def new_playlist(conn: Resource) -> None:
 def show_playlists(conn: Resource, _print: bool) -> None:
     """
     Show playlists [Max 50] on channel id
-    """
-    
-    clear()
-    
+    """    
     request = conn.playlists().list(
         part = "snippet",
         channelId = CHANNEL_ID,
@@ -171,56 +174,8 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> list:
 
     return tracks_info
 
-def export_playlist(conn: Resource, playlist_name: str = "") -> None:
-
-    """
-    Export all track's data from certain playlist into a csv file
-
-    
-    """
-
-    # get playlist id from playlist name
-    response = show_playlists(conn, _print=False)
-
-    if playlist_name == "":
-        # get playlists names
-        playlists :list = []
-        print("Choice a playlist to export: ")
-        for j in range(len(response)):
-                playlist_title: str = response[j]['snippet']['title']
-                print(f'{j}. {playlist_title}')
-                playlists.append(playlist_title)
-
-        # select a playlist name
-        option :str = ""
-        while option not in [str(i) for i in range(len(playlists))]:
-            option = input('Input a number: ')
-
-        playlist_name = playlists[int(option)] 
-
-
-    # get playlist id using playlist name
-    for i in range(len(response)):
-        if response[i]['snippet']['title'] == playlist_name: # if playlist name is the same as the one selected
-            playlist_id = response[i]['id']
-    
-            tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
-            
-            # create a csv file with all tracks info
-            with open(f'files/youtube_export_{playlist_name}.csv', 'w', newline="", encoding="utf-8") as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Track title', 'Video owner', 'Video id', 'Published date', 'Track id', 'Etag', 'Video owner id', 'Description', 'Track type', 'Jpg link'])
-                for i in range(len(tracks_info)):
-                    try:
-                        writer.writerow(tracks_info[i])
-                    except Exception as e:
-                        print(f"Error writing track {tracks_info[i][0]}, error msg: {e}")
-
-    clear()
-    print("Exported succesfully")
-
 def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
-#add song to playlist
+    #add song to playlist
   
     videoIds: list = []
     for i in range(len(tracks)):
@@ -231,6 +186,29 @@ def add_song(playlist_id: str, tracks: list, conn: Resource)->None:
 
     print(videoIds)
     print(playlist_id)
+    for videoId in videoIds:
+        playlists_insert_response = conn.playlistItems().insert(
+        part="snippet",
+        body=dict(
+        snippet=dict(
+            playlistId=playlist_id,
+            resourceId=dict(
+            kind="youtube#video",
+            videoId=videoId,
+            )
+            )
+        )
+    ).execute()
+    print ("New playlist item id: %s" % playlists_insert_response["id"])
+    
+def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
+    #add songs to playlist
+    videoIds: list = []
+    for i in range(len(tracks)):
+        track = tracks[i]
+        videoId = track['items'][0]['id']['videoId']
+        videoIds.append(videoId)
+
     for videoId in videoIds:
         playlists_insert_response = conn.playlistItems().insert(
         part="snippet",
@@ -297,3 +275,146 @@ def add_song_to_playlist(conn: Resource) -> None:
     playlist_id: str = playlistitems[number]['id']
 
     add_song(playlist_id, tracks, conn)
+    
+def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
+    """
+    Export all track's data from certain playlist into a csv file   
+    """
+    # get playlist id from playlist name
+    response = show_playlists(conn, _print=False)
+
+    if playlist_name == "":
+        # get playlists names
+        playlists :list = []
+        print("Choice a playlist to export: ")
+        for j in range(len(response)):
+                playlist_title: str = response[j]['snippet']['title']
+                print(f'{j}. {playlist_title}')
+                playlists.append(playlist_title)
+
+        # select a playlist name
+        option :str = ""
+        while option not in [str(i) for i in range(len(playlists))]:
+            option = input('Input a number: ')
+
+        playlist_name = playlists[int(option)] 
+
+
+    # get playlist id using playlist name
+    for i in range(len(response)):
+        if response[i]['snippet']['title'] == playlist_name: # if playlist name is the same as the one selected
+            playlist_id = response[i]['id']
+    
+            tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
+            
+            # create a csv file with all tracks info
+            with open(f'files/youtube_export_{playlist_name}.csv', 'w', newline="", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Track title', 'Video owner', 'Video id', 'Published date', 'Track id', 'Etag', 'Video owner id', 'Description', 'Track type', 'Jpg link'])
+                for i in range(len(tracks_info)):
+                    try:
+                        writer.writerow(tracks_info[i])
+                    except Exception as e:
+                        print(f"Error writing track {tracks_info[i][0]}, error msg: {e}")
+
+    print("Playlist exported successfully")
+
+def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
+    response = show_playlists(conn, _print=False)
+    for j in range(len(response)):
+        if response[j]['snippet']['localized']['title'] == playlist_name:
+            playlist_id: str = response[j]['id']
+
+    return playlist_id
+   
+def sync_to_spotify(conn: Resource):
+    """
+    sync playlist adding songs not found in spotify to the spotify playlist
+    """
+    from spotify_api import add_songs_sync_to_spotify, clean_titles, export_spotify_playlist, get_spotify_playlist_id_by_playlist_name, read_file, read_file_for_sync
+    from spotify_api import login as login_spotify
+    conn_spotify: Resource = login_spotify()
+    
+    print("\nSync playlist to Spotify\n")
+    print("Which playlist do you want to sync?\n")
+
+    response = show_playlists(conn, _print=False)
+    show_playlists(conn)
+    total_playlists = len(response)
+
+    # input playlist number
+    playlist_number: int = 0
+    while playlist_number not in range(1, total_playlists + 1):
+        try:
+            playlist_number: int = int(input('\nSelect a playlist: '))
+        except:
+            print('Invalid Option')
+    
+    playlist_name: str = response[playlist_number - 1]['snippet']['title']
+    
+    # export playlists
+    print('\nExporting Youtube playlist to csv...')
+    sleep(2)
+    export_youtube_playlist(conn, playlist_name)
+    print('\nExporting Spotify playlist to csv...')  
+    export_spotify_playlist(conn_spotify, playlist_name)
+    sleep(2)
+    
+    # files data
+    youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
+    spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
+    lines_youtube: list = read_file_for_sync(youtube_file, playlist_name, 'Youtube')
+    lines_spotify: list = read_file_for_sync(spotify_file, playlist_name, 'Spotify')
+    
+    # list all songs,artists of the chosen spotify playlist
+    spotify_songs_artists: list = []
+    for line in lines_spotify:
+        spotify_songs_artists.append([line[0].strip().title(), line[2].strip()]) #[[name. artist]]
+        
+    # list all songs,artists of the chosen spotify playlist
+    youtube_songs_artists: list = []
+    for line in lines_youtube:
+        if line != []:
+            youtube_songs_artists.append([line[1].strip().title(), line[0].strip()])
+    youtube_songs_artists = clean_titles(youtube_songs_artists)
+
+    # list songs that are not in spotify playlist
+    spotify_songs: list = [x[0] for x in spotify_songs_artists]
+    songs_not_in_spotify: list = [[x[0],x[1]] for x in youtube_songs_artists if x[0] not in spotify_songs]
+    print('\nThe next songs are not in the spotify playlist:')
+    count_songs: int = 1
+    for data in songs_not_in_spotify:
+        print(f"{count_songs}. {data[0]} - {data[1]}")
+        count_songs += 1
+    sleep(2)
+    
+    # write songs_not_in_spotify in youtube_to_spotify.csv
+    file_youtube_to_spotify = open(path + 'youtube_to_spotify.csv','w')
+    for song in songs_not_in_spotify:
+        file_youtube_to_spotify.write(f'{song[0]},{song[1]}\n')
+        
+    # read youtube_to_spotify.csv
+    file_youtube_to_spotify = path + "youtube_to_spotify.csv"
+    lines = read_file(file_youtube_to_spotify)
+    
+    # add songs not in spotify to spotify playlist
+    spotify_playlist_id = get_spotify_playlist_id_by_playlist_name(conn_spotify, playlist_name)[0]
+    print('\nAdding songs...')
+    add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
+    print('Songs added.')
+
+def get_tracks(conn, lines):
+    tracks = []
+    for line in lines:
+        
+        result = conn.search().list(
+                q = line[0],
+                part = 'snippet',
+                maxResults = 1,
+                type = 'video',
+            ).execute()
+        
+        tracks.append(result)
+
+    return tracks
+

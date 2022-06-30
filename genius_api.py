@@ -11,6 +11,9 @@ REDIRECT_URI_GENIUS = 'http://example.com/callback'
 CLIENT_ACCESS_TOKEN_GENIUS = 'aaaFW4ev8jSzuA8p0YzfWN7u4SPVLZqy9-ga4xqYieu5CxP2fvvT-swDQVODAuk1'
 
 def song_filter(title: str, artist: str) -> list:
+    """
+    Filter song title and artist
+    """
     if artist.endswith(' - topic'):
         artist = artist[:len(artist) - 8]
 

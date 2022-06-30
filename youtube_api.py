@@ -2,8 +2,6 @@ import os
 import csv
 import pathlib
 
-from io import TextIOWrapper
-from urllib import response
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError, Error
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -11,14 +9,12 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from requests import request
 from time import sleep
-import httplib2
+
 
 
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 
-
 CHANNEL_ID = 'UCxz7Qo_DeuK-LzHfK2KMo7w'
-# Primera Playlist PLIG13vm2QTYwCFv8lDl0SOiq1Tjwie_Ko
 
 SCOPES = [
     'https://www.googleapis.com/auth/youtube'
@@ -115,7 +111,7 @@ def new_playlist(conn: Resource) -> None:
         print('\nAn error has occurred')
 
 
-def show_playlists(conn: Resource, _print: bool = False) -> None:
+def show_playlists(conn: Resource, _print: bool = True) -> None:
     """
     Show playlists [Max 50] on channel id
     """    
@@ -174,6 +170,7 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> list:
 
     return tracks_info
 
+
 def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
     #add songs to playlist
   
@@ -198,7 +195,8 @@ def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
         )
     ).execute()
     print ("New playlist item id: %s" % playlists_insert_response["id"])
-    
+
+
 def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
     #add songs to playlist
 
@@ -221,6 +219,7 @@ def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) ->
             )
         )
     ).execute()
+
 
 def add_song_to_playlist(conn: Resource) -> None:
     '''
@@ -273,7 +272,8 @@ def add_song_to_playlist(conn: Resource) -> None:
     playlist_id: str = playlistitems[number]['id']
 
     add_song(playlist_id, tracks, conn)
-    
+
+
 def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     """
     Export all track's data from certain playlist into a csv file   
@@ -317,6 +317,7 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
 
     print("Playlist exported successfully")
 
+
 def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
     response = show_playlists(conn, _print=False)   
     for j in range(len(response)):
@@ -324,7 +325,8 @@ def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
             playlist_id: str = response[j]['id']
 
     return playlist_id
-   
+
+
 def sync_to_spotify(conn: Resource):
     """
     sync playlist adding songs not found in spotify to the spotify playlist
@@ -400,6 +402,7 @@ def sync_to_spotify(conn: Resource):
     print('\nAdding songs...')
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')
+
     
 def get_tracks(conn, lines):
     tracks = []

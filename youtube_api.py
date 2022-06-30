@@ -10,7 +10,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from requests import request
+from time import sleep
 import httplib2
+
 
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 
@@ -170,7 +172,7 @@ def getTracksInfo(conn: Resource, playlist_id: str) -> None:
 
     return tracks_info
 
-def export_playlist(conn: Resource, playlist_name: str = "") -> None:
+def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     """
     Export all track's data from certain playlist into a csv file   
     """
@@ -211,8 +213,7 @@ def export_playlist(conn: Resource, playlist_name: str = "") -> None:
                     except Exception as e:
                         print(f"Error writing track {tracks_info[i][0]}, error msg: {e}")
 
-    clear()
-    print("Exported succesfully")
+    print("Playlist exported successfully")
 
 def get_yb_playlist_id_by_playlist_name(conn,playlist_name):
     response = show_playlists(conn, _print=False)
@@ -226,8 +227,9 @@ def sync_to_spotify(conn: Resource):
     """
     sync playlist adding songs not found in spotify to the spotify playlist
     """
-    from spotify_api import add_songs_sync_to_spotify, clean_titles, get_spotify_playlist_id,  read_file, read_file_for_sync
+    from spotify_api import add_songs_sync_to_spotify, clean_titles, export_spotify_playlist, get_spotify_playlist_id_by_playlist_name, read_file, read_file_for_sync
     from spotify_api import login as login_spotify
+    conn_spotify: Resource = login_spotify()
     
     print("\nSync playlist to Spotify\n")
     print("Which playlist do you want to sync?\n")
@@ -245,9 +247,16 @@ def sync_to_spotify(conn: Resource):
             print('Invalid Option')
     
     playlist_name: str = response[playlist_number - 1]['snippet']['title']
-    #playlist_id: str = response[playlist_number - 1]['id']
-    # TODO: exportar la playlist
     
+    # export playlists
+    print('\nExporting Youtube playlist to csv...')
+    sleep(2)
+    export_youtube_playlist(conn, playlist_name)
+    print('\nExporting Spotify playlist to csv...')  
+    export_spotify_playlist(conn_spotify, playlist_name)
+    sleep(2)
+    
+    # files data
     youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
     spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
     lines_youtube: list = read_file_for_sync(youtube_file, playlist_name, 'Youtube')
@@ -273,6 +282,7 @@ def sync_to_spotify(conn: Resource):
     for data in songs_not_in_spotify:
         print(f"{count_songs}. {data[0]} - {data[1]}")
         count_songs += 1
+    sleep(2)
     
     # write songs_not_in_spotify in youtube_to_spotify.csv
     file_youtube_to_spotify = open(path + 'youtube_to_spotify.csv','w')
@@ -284,8 +294,7 @@ def sync_to_spotify(conn: Resource):
     lines = read_file(file_youtube_to_spotify)
     
     # add songs not in spotify to spotify playlist
-    conn_spotify: Resource = login_spotify()
-    spotify_playlist_id = get_spotify_playlist_id(conn_spotify, playlist_name)
+    spotify_playlist_id = get_spotify_playlist_id_by_playlist_name(conn_spotify, playlist_name)[0]
     print('\nAdding songs...')
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')

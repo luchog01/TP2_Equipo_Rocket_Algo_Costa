@@ -115,12 +115,10 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
-def export_playlist(conn: Spotify, playlist_name = "") -> None:
+def export_spotify_playlist(conn: Spotify, playlist_name = "") -> None:
     """
     Export all track's data from certain playlist into a csv file
     """
-    clear()
-
     playlistitems :list = show_playlists(conn, _print=False) # Get all playlists
 
     if playlist_name == "":
@@ -168,8 +166,8 @@ def export_playlist(conn: Spotify, playlist_name = "") -> None:
             except:
                 print('An error has occurred in track', track[0])
 
-    clear
-    print('\nPlaylist exported successfully') 
+
+    print('Playlist exported successfully') 
     
 def clean_titles(youtube_songs: list) -> list:
     regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
@@ -196,12 +194,12 @@ def read_file_for_sync(file: str, playlist_name: str, platform: str):
             for row in csv_reader:
                 lines.append(row)
     except IOError:
-        print(f"\nFile not found - Playlist {playlist_name} from {platform}  - Export playlists before sync\n")
+        print(f"\nFile not found - Playlist {playlist_name} from {platform}\n")
         
     return lines
 
 def get_songs_uri(track_id):  
-    songs_uri = []
+    songs_uri: list = []
     for i in range(len(track_id)):
         songs_uri.append(playlist_songs = Spotify.track(track_id))
             
@@ -215,6 +213,16 @@ def read_file(file):
             lines.append(row)
 
     return lines
+
+def get_spotify_playlist_id_by_playlist_name(conn: Spotify, playlist_name):
+    playlists = Spotify.playlists(conn, USER_ID)
+    playlists_id_list = []
+
+    for i in range(playlists.total):
+        if playlists.items[i].name == playlist_name:
+            playlists_id_list.append(playlists.items[i].id)
+
+    return playlists_id_list
 
 def sync_to_youtube(conn: Spotify):
     """

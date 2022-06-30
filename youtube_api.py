@@ -280,7 +280,7 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     Export all track's data from certain playlist into a csv file   
     """
     # get playlist id from playlist name
-    response = show_playlists(conn)
+    response = show_playlists(conn, _print=False)
 
     if playlist_name == "":
         # get playlists names
@@ -404,9 +404,15 @@ def sync_to_spotify(conn: Resource):
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')
 
+
     
 def get_tracks(conn: Resource, lines: list) -> list:
     tracks: list = []
+
+
+def get_tracks(conn, lines):
+    tracks = []
+
     for line in lines:
         
         result = conn.search().list(

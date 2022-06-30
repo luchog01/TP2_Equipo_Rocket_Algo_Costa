@@ -184,7 +184,6 @@ def add_song_to_playlist(conn: Spotify) -> None:
         number = int(input('Enter a number: '))
 
     playlist_id: str = playlistitems[number].id
-    playlist:str = playlistitems[number].name
 
     #add songs to playlist
     conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)

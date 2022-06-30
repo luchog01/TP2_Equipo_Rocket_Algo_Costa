@@ -190,5 +190,4 @@ def add_song_to_playlist(conn: Spotify) -> None:
     
     print('Songs successfully added')
 
-export_playlist(login(), "Yellow")
 

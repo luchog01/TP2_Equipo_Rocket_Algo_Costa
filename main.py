@@ -106,6 +106,7 @@ def main():
             print("Option not supported")
             
     else:
+        youtube.clear()
         print('Bye, \'Loco Mauro\'')
 
 

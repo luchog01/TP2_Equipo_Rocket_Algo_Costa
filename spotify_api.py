@@ -89,7 +89,6 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     """
     Show playlists [Max 50] on user id
     """
-
     clear()
 
     playlists = Spotify.playlists(conn, USER_ID, 50, 0)
@@ -173,7 +172,6 @@ def add_song_to_playlist(conn: Spotify) -> None:
     '''
     clear()
 
-<<<<<<< HEAD
     #search the song
     print('Enter quit if you dont want to add more songs')
     song :str = input('Enter the song: ')
@@ -270,7 +268,7 @@ def sync_to_youtube(conn: Spotify):
     """
     sync playlist adding songs not found in youtube to the youtube playlist
     """
-    from youtube_api import get_yb_playlist_id_by_playlist_name, get_tracks, export_youtube_playlist, add_song_to_youtube_sync, login as login_youtube
+    from youtube_api import get_yb_playlist_id_by_playlist_name, get_tracks, export_youtube_playlist, add_songs_sync_to_youtube, login as login_youtube
     conn_youtube = login_youtube()
     
     print("\nSync playlist to Youtube\n")
@@ -335,7 +333,7 @@ def sync_to_youtube(conn: Spotify):
     youtube_playlist_id = get_yb_playlist_id_by_playlist_name(conn_youtube, playlist_name)
     tracks = get_tracks(conn_youtube, lines)
     print(tracks)
-    add_song_to_youtube_sync(youtube_playlist_id, tracks, conn_youtube)
+    add_songs_sync_to_youtube(youtube_playlist_id, tracks, conn_youtube)
 
     
 def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
@@ -348,9 +346,6 @@ def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # add songs to playlist
     conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks_uris)
 
-
-    
-=======
 def add_song_to_playlist(conn: Spotify) -> None:
     '''
     Add songs to a user playlist
@@ -386,7 +381,6 @@ def add_song_to_playlist(conn: Spotify) -> None:
     conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
     
     print('Songs successfully added')
->>>>>>> b4a1d006dd8c316b4e41145b7865c2df42c116e2
 
 
      

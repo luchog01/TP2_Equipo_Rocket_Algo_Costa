@@ -22,7 +22,7 @@ def song_filter(title: str, artist: str) -> list:
     remix = False
     if 'remix' in title.lower():
         remix = True
-        title.replac('remix','')
+        title.replace('remix','')
 
     check = False
     while not check:

@@ -1,4 +1,3 @@
-from turtle import position
 import tekore as tk
 from tekore import Spotify
 import os
@@ -96,7 +95,7 @@ def show_playlists(conn: Spotify, _print :bool=True) -> None:
     else:
         return playlists.items
 
-def export_playlist(conn: Spotify) -> None:
+def export_playlist(conn: Spotify, playlist_name = "") -> None:
     """
     Export all track's data from certain playlist into a csv file
     """
@@ -104,17 +103,26 @@ def export_playlist(conn: Spotify) -> None:
 
     playlistitems :list = show_playlists(conn, _print=False) # Get all playlists
 
-    # select a playlist
-    print("Choice a playlist to export: ")
-    for i in range(len(playlistitems)):
-            print(f'{i}. {playlistitems[i].name}')
-    option :str = ""
-    while option not in [str(i) for i in range(len(playlistitems))]:
-        option = input('Input a number: ')
-    option = int(option)
+    if playlist_name == "":
+        # select a playlist
+        print("Choice a playlist to export: ")
+        for i in range(len(playlistitems)):
+                print(f'{i}. {playlistitems[i].name}')
+        option :str = ""
+        while option not in [str(i) for i in range(len(playlistitems))]:
+            option = input('Input a number: ')
+        option = int(option)
+        # get track's data from playlist 
+        tracks :list = conn.playlist_items(playlistitems[option].id).items
+    
+    else:
+        for i in range(len(playlistitems)):
+            if playlistitems[i].name == playlist_name:
+                # get track's data from playlist 
+                option = i
+                tracks :list = conn.playlist_items(playlistitems[option].id).items
 
-    # get track's data from playlist 
-    tracks :list = conn.playlist_items(playlistitems[option].id).items
+    
 
     # fetch track's data into a list of lists
     tracks_data :list = []
@@ -142,61 +150,47 @@ def export_playlist(conn: Spotify) -> None:
                 print('An error has occurred in track', track[0])
 
     clear
+
     print('\nPlaylist exported successfully')
-
-    def add_song_to_playlist(conn: Spotify) -> None:
-        '''
-        Add songs to a user playlist
-        '''
-        clear()
-
-        #search the song
-        print('Enter quit if you dont want to add more songs')
-        song :str = input('Enter the song: ')
-        tracks_uri: list = []
-
-        while song != 'quit':
-            result = conn.search(song, types= ('track',))[0].items[0]
-            tracks_uri.append(result.uri)
-            song = input('Enter the song: ')
-
-        #select a playlist
-        numbers: list = []
-        playlistitems :list = show_playlists(conn, _print=False)
-        print('Choice a playlist to add the songs: ')
-
-        for i in range(len(playlistitems)):
-            print(i, playlistitems[i].name)
-            numbers.append(i)
-
-        number :int = -1
-        while number not in numbers:
-            number = int(input('Enter a number: '))
-
-        playlist_id: str = playlistitems[number].id
-        playlist:str = playlistitems[number].name
-
-        #add songs to playlist
-        all_tracks :list = conn.playlist_items(playlist.uri).items
-
-        conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
-
-        
-        if tracks_uri in all_tracks:
-            print('Songs successfully added')
-        else:
-            print('An error has occurred when trying to add the songs')
-
-
-
     
 
+def add_song_to_playlist(conn: Spotify) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
 
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks_uri: list = []
 
+    while song != 'quit':
+        result = conn.search(song, types= ('track',))[0].items[0]
+        tracks_uri.append(result.uri)
+        song = input('Enter the song: ')
 
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
 
-        
+    for i in range(len(playlistitems)):
+        print(i, playlistitems[i].name)
+        numbers.append(i)
 
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number].id
+    playlist:str = playlistitems[number].name
+
+    #add songs to playlist
+    conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
+    
+    print('Songs successfully added')
+   
 
 
 

@@ -4,9 +4,7 @@ import os
 import re
 import csv
 import pathlib
-
-from youtube_api import get_yb_playlist_id_by_playlist_name
-
+from time import sleep
 
 path = str(pathlib.Path(__file__).parent.absolute()) + '\\files\\'
 USER_ID = '31wehtihuhvriaasxyd5phnekdye'
@@ -14,6 +12,7 @@ CLIENT_ID = '5422aa04b10040e18ef47834e08ec9aa'
 CLIENT_SECRET = 'a03bc8e3402949e480f4eb98036a230a'
 REDIRECT_URI = 'https://example.com/callback' 
 FILE_TEKORE = 'tekore.cfg' 
+
 
 def clear() -> None:
     '''
@@ -167,6 +166,49 @@ def export_spotify_playlist(conn: Spotify, playlist_name = "") -> None:
                 print('An error has occurred in track', track[0])
 
     print('Playlist exported successfully') 
+
+def add_song_to_playlist(conn: Spotify) -> None:
+    '''
+    Add songs to a user playlist
+    '''
+    clear()
+
+    #search the song
+    print('Enter quit if you dont want to add more songs')
+    song :str = input('Enter the song: ')
+    tracks_uri: list = []
+
+    while song != 'quit':
+        result = conn.search(song, types= ('track',))[0].items[0]
+        tracks_uri.append(result.uri)
+        song = input('Enter the song: ')
+
+    #select a playlist
+    numbers: list = []
+    playlistitems :list = show_playlists(conn, _print=False)
+    print('Choice a playlist to add the songs: ')
+
+    for i in range(len(playlistitems)):
+        print(i, playlistitems[i].name)
+        numbers.append(i)
+
+    number :int = -1
+    while number not in numbers:
+        number = int(input('Enter a number: '))
+
+    playlist_id: str = playlistitems[number].id
+    playlist:str = playlistitems[number].name
+
+    #add songs to playlist
+    all_tracks :list = conn.playlist_items(playlist.uri).items
+
+    conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
+
+    
+    if tracks_uri in all_tracks:
+        print('Songs successfully added')
+    else:
+        print('An error has occurred when trying to add the songs')   
     
 def clean_titles(youtube_songs: list) -> list:
     regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
@@ -227,7 +269,8 @@ def sync_to_youtube(conn: Spotify):
     """
     sync playlist adding songs not found in youtube to the youtube playlist
     """
-    from youtube_api import login as login_youtube
+    from youtube_api import get_yb_playlist_id_by_playlist_name, get_tracks, export_youtube_playlist, add_song_to_youtube_sync, login as login_youtube
+    conn_youtube = login_youtube()
     
     print("\nSync playlist to Youtube\n")
     print("Which playlist do you want to sync?\n")
@@ -242,9 +285,14 @@ def sync_to_youtube(conn: Spotify):
     option = int(option)
     
     playlist_name: str = Spotify.playlists(conn, USER_ID).items[option - 1].name
-    #playlist_id: str = Spotify.playlists(conn, USER_ID).items[option - 1].id
-    # TODO: exportar la playlist 
-    #export_playlist(login(), playlist_name)
+    
+    # export playlists
+    print('\nExporting Youtube playlist to csv...')
+    sleep(2)
+    export_youtube_playlist(conn_youtube, playlist_name)
+    print('\nExporting Spotify playlist to csv...')  
+    export_spotify_playlist(conn, playlist_name)
+    sleep(2)
     
     youtube_file: str = path + f"youtube_export_{playlist_name}.csv"
     spotify_file: str = path + f"spotify_export_{playlist_name}.csv"
@@ -255,7 +303,6 @@ def sync_to_youtube(conn: Spotify):
     spotify_songs_artists: list = []
     for line in lines_spotify:
         spotify_songs_artists.append([line[0].strip().title(), line[2].strip()]) #[[name. artist]]
-
         
     # list all songs,artists of the chosen spotify playlist
     youtube_songs_artists: list = []
@@ -284,9 +331,11 @@ def sync_to_youtube(conn: Spotify):
     lines = read_file(file_spotify_to_youtube)
     
     # add songs not in youtube to youtube playlist  
-    conn_youtube = login_youtube()
     youtube_playlist_id = get_yb_playlist_id_by_playlist_name(conn_youtube, playlist_name)
-    #add_songs_sync_to_youtube(conn_youtube, lines, youtube_playlist_id)
+    tracks = get_tracks(conn_youtube, lines)
+    print(tracks)
+    add_song_to_youtube_sync(youtube_playlist_id, tracks, conn_youtube)
+
     
 def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # get songs uris
@@ -298,49 +347,8 @@ def add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id):
     # add songs to playlist
     conn_spotify.playlist_add(playlist_id = spotify_playlist_id, uris = tracks_uris)
 
-    print('Playlist exported successfully')
-    
-def add_song_to_playlist(conn: Spotify) -> None:
-    '''
-    Add songs to a user playlist
-    '''
-    clear()
-
-    #search the song
-    print('Enter quit if you dont want to add more songs')
-    song :str = input('Enter the song: ')
-    tracks_uri: list = []
-
-    while song != 'quit':
-        result = conn.search(song, types= ('track',))[0].items[0]
-        tracks_uri.append(result.uri)
-        song = input('Enter the song: ')
-
-    #select a playlist
-    numbers: list = []
-    playlistitems :list = show_playlists(conn, _print=False)
-    print('Choice a playlist to add the songs: ')
-
-    for i in range(len(playlistitems)):
-        print(i, playlistitems[i].name)
-        numbers.append(i)
-
-    number :int = -1
-    while number not in numbers:
-        number = int(input('Enter a number: '))
-
-    playlist_id: str = playlistitems[number].id
-    playlist:str = playlistitems[number].name
-
-    #add songs to playlist
-    all_tracks :list = conn.playlist_items(playlist.uri).items
-
-    conn.playlist_add(playlist_id = playlist_id, uris = tracks_uri, position=None)
 
     
-    if tracks_uri in all_tracks:
-        print('Songs successfully added')
-    else:
-        print('An error has occurred when trying to add the songs')   
 
-print('\nPlaylist exported successfully')   
+
+     

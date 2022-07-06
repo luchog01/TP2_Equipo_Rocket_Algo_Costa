@@ -3,6 +3,8 @@ import requests, os, platform, subprocess
 import youtube_api as yt
 import spotify_api as spt
 from youtube_api import clear
+from googleapiclient.discovery import Resource
+from tekore import Spotify
 
 CLIENT_ID_GENIUS = '2dqdSoz3Sbq5hZqMQ5wc87hgR0JKvp0yHjGw0ZolfbVRIu32nth6bMzZPutRgszt'
 CLIENT_SECRET_GENIUS = 'oQbNvvO0mbOkhK6UX8-MyyrpmJpN66T2qh1T6PX7iPXNIv6RK9uR17ZOfSfGkqUrIh9rNz8jVCTAZE63TEt9sw'
@@ -47,7 +49,7 @@ def get_tracks_info(app :str, conn) -> list:
     clear()
     #Read the file from yt/spt
     if app == 'Youtube':
-        response = yt.show_playlists(conn, _print = False)
+        response: Resource = yt.show_playlists(conn, _print = False)
         playlists_quantity: int = len(response)
         yt.show_playlists(conn, _print = True)
         
@@ -61,7 +63,7 @@ def get_tracks_info(app :str, conn) -> list:
         if track_info == []:
             raise IndexError('Empty playlist')
             
-        songs = []
+        songs: list = []
         for track in track_info:
             title: str = track[0].lower()
             artist: str = track[1].lower()
@@ -69,7 +71,7 @@ def get_tracks_info(app :str, conn) -> list:
         return songs
         
     elif app == 'Spotify':
-        response = spt.show_playlists(conn, _print = False)
+        response: Spotify = spt.show_playlists(conn, _print = False)
         playlists_quantity: int = len(response)
         spt.show_playlists(conn, _print = True)
         
@@ -94,17 +96,17 @@ def get_lyrics(songs: list, only_get: bool) -> list:
     """
     Get the lyrics of each song
     """
-    genius = Genius(CLIENT_ACCESS_TOKEN_GENIUS, verbose = False, remove_section_headers = True)
+    genius: Genius = Genius(CLIENT_ACCESS_TOKEN_GENIUS, verbose = False, remove_section_headers = True)
         
     lyrics: list = []
     print('Searching lyrics...')
     for song in songs: #Search lyrics
         try: #Try searching with the artist name
-            lyric = genius.search_song(song[0], song[1])
+            lyric: Genius = genius.search_song(song[0], song[1])
             lyric: str = lyric.to_text()
         except:
             try: #Try searching without the artist name
-                lyric = genius.search_song(song[0])
+                lyric: Genius = genius.search_song(song[0])
                 lyric: str = lyric.to_text()
 
             except:

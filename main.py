@@ -5,15 +5,6 @@ from tekore import Spotify
 import genius_api as genius
 
 
-def select_plataform(plataform:str) -> None:
-    if plataform == "spotify":
-        pass # return spotify service
-    elif plataform == "youtube":
-        pass # return youtube service
-    else:
-        print("Plataform not supported")
-
-
 def show_menu() -> None:
     print("""
 MENU\n

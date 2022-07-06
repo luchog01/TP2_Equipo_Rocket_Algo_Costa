@@ -214,8 +214,9 @@ def add_song_to_playlist(conn: Spotify) -> None:
 
 
 def clean_titles(youtube_songs: list) -> list:
-    regex_title: str = "(?<=- ).*?(?=\(|\[|feat)"
-    regex_artist: str = ".*(?=-)"
+    print(youtube_songs)
+    regex_title: str = "(?<=- |\| ).*?(?=\(|\[|feat)"
+    regex_artist: str = ".*(?=-|\|)"
     youtube_songs_clean: list = []
     for text in youtube_songs:
         if not re.findall(regex_title, text[1]):
@@ -254,7 +255,7 @@ def get_songs_uri(track_id):
 
 def read_file(file):
     lines: list = []
-    with open(file, newline='', encoding="UTF-8") as file_csv:
+    with open(file, newline='', encoding="latin1") as file_csv:
         csv_reader = csv.reader(file_csv, delimiter=',')
         for row in csv_reader:
             lines.append(row)

@@ -194,7 +194,7 @@ def add_song(playlist_id: str, tracks: list, conn: Resource) -> None:
             )
         )
     ).execute()
-    print ("New playlist item id: %s" % playlists_insert_response["id"])
+    print ("\nNew playlist item id: %s" % playlists_insert_response["id"] )
 
 
 def add_songs_sync_to_youtube(playlist_id: str, tracks: list, conn: Resource) -> None:
@@ -229,7 +229,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
     #search the song
     print('Enter quit if you dont want to add more songs')
-    song :str = input('Enter the song: ')
+    song :str = input('\nEnter the song: ')
     tracks: list = []
 
     while song != 'quit':
@@ -240,26 +240,27 @@ def add_song_to_playlist(conn: Resource) -> None:
             maxResults = 3,
             type = 'video',
         ).execute()
+
         songs :list = result['items']
-        
         options: list = []
+
         for i in range(len(songs)):
             print(i, songs[i]['snippet']['title'])
             options.append(i)
 
         option :int = -1
         while option not in options:
-            option = int(input('Enter a number: '))
+            option = int(input('\nEnter a number: '))
 
         song = songs[option]
         tracks.append(song)
-        song :str = input('Enter a song: ')
+        song :str = input('\nEnter a song: ')
     
 
     #select a playlist
     numbers: list = []
     playlistitems :list = show_playlists(conn, _print=False)
-    print('Choice a playlist to add the songs: ')
+    print('\nChoose a playlist to add the songs: ')
 
     for i in range(len(playlistitems)):
         print(i,  playlistitems[i]['snippet']['title'])
@@ -267,7 +268,7 @@ def add_song_to_playlist(conn: Resource) -> None:
 
     number :int = -1
     while number not in numbers:
-        number = int(input('Enter a number: '))
+        number = int(input('\nEnter a number: '))
 
     playlist_id: str = playlistitems[number]['id']
 
@@ -279,12 +280,12 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     Export all track's data from certain playlist into a csv file   
     """
     # get playlist id from playlist name
-    response = show_playlists(conn)
+    response = show_playlists(conn, _print=False)
 
     if playlist_name == "":
         # get playlists names
         playlists :list = []
-        print("Choice a playlist to export: ")
+        print("Choose a playlist to export: ")
         for j in range(len(response)):
                 playlist_title: str = response[j]['snippet']['title']
                 print(f'{j}. {playlist_title}')
@@ -304,6 +305,12 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
             playlist_id = response[i]['id']
     
             tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
+            
+            # check if /files folder is in directory, if it is not, then add it
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            dir_path = os.path.join(dir_path, "files")
+            if not os.path.isdir(dir_path):
+                os.mkdir(dir_path)
             
             # create a csv file with all tracks info
             with open(f'files/youtube_export_{playlist_name}.csv', 'w', newline="", encoding="utf-8") as csvfile:
@@ -333,6 +340,10 @@ def sync_to_spotify(conn: Resource):
     """
     from spotify_api import add_songs_sync_to_spotify, clean_titles, export_spotify_playlist, get_spotify_playlist_id_by_playlist_name, read_file, read_file_for_sync
     from spotify_api import login as login_spotify
+    from spotify_api import show_playlists as show_playlist_spotify
+    from tekore import Spotify
+    from spotify_api import USER_ID as user_id_spotify
+
     conn_spotify: Resource = login_spotify()
     
     print("\nSync playlist to Spotify\n")
@@ -351,6 +362,20 @@ def sync_to_spotify(conn: Resource):
             print('Invalid Option')
     
     playlist_name: str = response[playlist_number - 1]['snippet']['title']
+    playlist_description: str = response[playlist_number - 1]['snippet']['description']
+
+    # check if youtube playlist is in Spotify
+    playlistitems = show_playlist_spotify(conn_spotify,_print=False)
+    playlist_name_list: list = []
+    for i in range(len(playlistitems)):
+        playlist_name_list.append(playlistitems[i].name)
+    
+    if playlist_name not in playlist_name_list:
+        print("Creating Playlist in Spotify...")
+        Spotify.playlist_create(conn_spotify, user_id_spotify, playlist_name,
+                                True, playlist_description)
+
+    
     
     # export playlists
     print('\nExporting Youtube playlist to csv...')
@@ -403,9 +428,15 @@ def sync_to_spotify(conn: Resource):
     add_songs_sync_to_spotify(conn_spotify, lines, spotify_playlist_id)
     print('Songs added.')
 
+
     
+def get_tracks(conn: Resource, lines: list) -> list:
+    tracks: list = []
+
+
 def get_tracks(conn, lines):
     tracks = []
+
     for line in lines:
         
         result = conn.search().list(
@@ -418,4 +449,3 @@ def get_tracks(conn, lines):
         tracks.append(result)
 
     return tracks
-

@@ -156,6 +156,12 @@ def export_spotify_playlist(conn: Spotify, playlist_name = "") -> None:
         disc_number :str = str(track.track.disc_number)
         tracks_data.append([name, id, artist, album, duration, date, explicit, popularity, track_number, disc_number])
 
+    # check if /files folder is in directory, if it is not, then add it
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.join(dir_path, "files")
+    if not os.path.isdir(dir_path):
+        os.mkdir(dir_path)
+
     # export to csv
     playlist_name = str(playlistitems[option].name).replace(' ', '_')
     with open(f'files/spotify_export_{playlist_name}.csv', 'w', encoding="utf-8") as f:

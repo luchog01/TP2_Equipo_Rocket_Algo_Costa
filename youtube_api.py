@@ -306,6 +306,12 @@ def export_youtube_playlist(conn: Resource, playlist_name: str = "") -> None:
     
             tracks_info: list = getTracksInfo(conn, playlist_id) # get tracks info
             
+            # check if /files folder is in directory, if it is not, then add it
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            dir_path = os.path.join(dir_path, "files")
+            if not os.path.isdir(dir_path):
+                os.mkdir(dir_path)
+            
             # create a csv file with all tracks info
             with open(f'files/youtube_export_{playlist_name}.csv', 'w', newline="", encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)

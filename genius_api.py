@@ -19,15 +19,15 @@ def song_filter(title: str, artist: str) -> list:
     if artist.endswith('vevo'):
         artist = artist[:len(artist) - 4]
         
-    remix = False
+    remix: bool = False
     if 'remix' in title.lower():
         remix = True
         title.replace('remix','')
 
-    check = False
+    check: bool = False
     while not check:
-        first = title.find('(')
-        second = title.find(')')
+        first: int = title.find('(')
+        second: int = title.find(')')
 
         if first != -1:
             title = title[:first] + title[second + 1:]
@@ -36,7 +36,7 @@ def song_filter(title: str, artist: str) -> list:
             
     if remix:
         title = title + 'remix'
-    song = [title,artist]
+    song: list = [title,artist]
     return song
 
 
@@ -135,11 +135,11 @@ def get_lyrics(songs: list, only_get: bool) -> list:
         #lyrics filter
         if not only_get:
             if type(lyric) == list:
-                lyric = ''.join(lyric)
-            check = False
+                lyric: str = ''.join(lyric)
+            check: bool = False
             while not check:
-                first = lyric.find('(')
-                second = lyric.find(')')
+                first: int = lyric.find('(')
+                second: int = lyric.find(')')
 
                 if first != -1:
                     lyric = lyric[:first] + lyric[second + 1:]
@@ -147,7 +147,7 @@ def get_lyrics(songs: list, only_get: bool) -> list:
                     check = True
 
             lyric = lyric.replace('\n',' ')
-            cut = (lyric.lower()).find('lyrics')
+            cut: int = (lyric.lower()).find('lyrics')
             lyric = lyric[cut + 7:]
             lyrics.append(lyric)
             
@@ -173,8 +173,8 @@ def top10_words(lyrics: str) -> None:
     lyrics_list2: list = [word for word in lyrics_list if word not in filter_list]
     #Sort
     dicc: dict = {word:lyrics_list2.count(word) for word in lyrics_list2}
-    sorted_tuples = sorted(dicc.items(), key=lambda item: item[1], reverse = True)
-    sorted_list = [[k, v] for k, v in sorted_tuples]
+    sorted_tuples: tuple = sorted(dicc.items(), key=lambda item: item[1], reverse = True)
+    sorted_list: list = [[k, v] for k, v in sorted_tuples]
     #Print rank
     if len(sorted_list) > 10:
         max_rank: int = 10
@@ -191,7 +191,7 @@ def make_word_cloud(app :str, conn) -> None:
     """
     try:  
         lyrics: list = get_lyrics(get_tracks_info(app, conn), only_get = False)
-        lyrics_string = ' '.join(lyrics)
+        lyrics_string: str = ' '.join(lyrics)
         
         print('Doing the word cloud, wait a minute...')
         resp = requests.post('https://quickchart.io/wordcloud', json={
